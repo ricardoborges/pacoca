@@ -300,6 +300,19 @@ theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
 theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
 alignment = 1
 
+[node name="MusicLabel" type="Label" parent="ConfigPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Volume da Música:"
+label_settings = SubResource("LabelSettings_body")
+
+[node name="MusicVolumeSlider" type="HSlider" parent="ConfigPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 0.6
+
 [node name="MapButton" type="Button" parent="ConfigPanel/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2

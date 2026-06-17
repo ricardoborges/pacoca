@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://l3t36lgt0qhg"
-path="res://.godot/imported/hud_dino_head.png-b60eef56762ceda6900823ab48fd32c9.ctex"
+uid="uid://cen7p3qrph36l"
+path="res://.godot/imported/_hud_dino_head.png-6e927bd7ea1739e0984dd64d3096482b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://textures/ui/hud_dino_head.png"
-dest_files=["res://.godot/imported/hud_dino_head.png-b60eef56762ceda6900823ab48fd32c9.ctex"]
+source_file="res://textures/ui/_hud_dino_head.png"
+dest_files=["res://.godot/imported/_hud_dino_head.png-6e927bd7ea1739e0984dd64d3096482b.ctex"]
 
 [params]
 

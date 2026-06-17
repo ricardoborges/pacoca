@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cvjf6a37864ct"
-valid=false
+uid="uid://crm6xuxwudpl2"
+path="res://.godot/imported/hud_ring.png-684e5018a1234bd54f13ef733c93edab.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://textures/ui/hud_ring.png"
+dest_files=["res://.godot/imported/hud_ring.png-684e5018a1234bd54f13ef733c93edab.ctex"]
 
 [params]
 

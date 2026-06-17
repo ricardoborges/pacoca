@@ -35,6 +35,14 @@ public partial class Menu : Control
     private AudioStreamPlayer _audioPlayer = null!;
     private AudioStreamGeneratorPlayback? _audioPlayback;
 
+    // Background music player (title theme)
+    private AudioStreamPlayer _musicPlayer = null!;
+    private HSlider _musicVolumeSlider = null!;
+
+    // Fade envelope constants (applied to the music player's volume_db)
+    private const float MusicSilentDb = -40.0f;
+    private const float MusicFadeTime = 1.0f;
+
     // List of buttons to animate focus scale
     private List<Button> _animatedButtons = new();
 
@@ -49,6 +57,23 @@ public partial class Menu : Control
         _audioPlayer.Stream = generator;
         _audioPlayer.Play();
         _audioPlayback = _audioPlayer.GetStreamPlayback() as AudioStreamGeneratorPlayback;
+
+        // Setup background music (title theme), routed through the "Music" bus so the
+        // volume slider controls it globally. The player's own volume_db is used purely
+        // as a fade envelope.
+        GameSettings.EnsureMusicBus();
+        _musicPlayer = new AudioStreamPlayer();
+        _musicPlayer.Bus = "Music";
+        AddChild(_musicPlayer);
+        var menuMusic = GameSettings.LoadMusic("res://audio/menu.mp3");
+        if (menuMusic is AudioStreamMP3 mp3)
+        {
+            mp3.Loop = true;
+        }
+        _musicPlayer.Stream = menuMusic;
+        _musicPlayer.VolumeDb = MusicSilentDb;
+        _musicPlayer.Play();
+        FadeMusic(0.0f, MusicFadeTime);
 
         // Main Menu references
         _startButton = GetNode<Button>("MainMenuContainer/JogarButton");
@@ -66,6 +91,9 @@ public partial class Menu : Control
         _joyOptionButton = GetNode<OptionButton>("ConfigPanel/MarginContainer/VBoxContainer/JoyOptionButton");
         _mapInstructionsLabel = GetNode<Label>("ConfigPanel/MarginContainer/VBoxContainer/MapInstructionsLabel");
         _configPanel = GetNode<PanelContainer>("ConfigPanel");
+        _musicVolumeSlider = GetNode<HSlider>("ConfigPanel/MarginContainer/VBoxContainer/MusicVolumeSlider");
+        _musicVolumeSlider.Value = GameSettings.MusicVolume;
+        _musicVolumeSlider.ValueChanged += OnMusicVolumeChanged;
 
         // Level Panel references
         _level1Button = GetNode<Button>("LevelPanel/MarginContainer/VBoxContainer/Level1Button");
@@ -257,14 +285,14 @@ public partial class Menu : Control
     {
         PlaySound(1046.50f, 0.15f, 0.4f); // C6 note confirm sound
         GameSettings.LevelToLoad = "res://scenes/levels/level_01.tscn";
-        GetTree().ChangeSceneToFile("res://scenes/main.tscn");
+        ChangeSceneWithFade("res://scenes/main.tscn");
     }
 
     private void OnDebugLevelPressed()
     {
         PlaySound(1046.50f, 0.15f, 0.4f); // C6 note confirm sound
         GameSettings.LevelToLoad = "res://scenes/levels/debug.tscn";
-        GetTree().ChangeSceneToFile("res://scenes/main.tscn");
+        ChangeSceneWithFade("res://scenes/main.tscn");
     }
 
     private void OnLevelBackPressed()
@@ -426,6 +454,28 @@ public partial class Menu : Control
     {
         PlaySound(261.63f, 0.2f, 0.3f); // C4 note quit sound
         GetTree().CreateTimer(0.25f).Timeout += () => GetTree().Quit();
+    }
+
+    private void OnMusicVolumeChanged(double value)
+    {
+        GameSettings.MusicVolume = (float)value;
+        GameSettings.ApplyMusicVolume();
+    }
+
+    // Tweens the music player's volume_db (fade envelope) toward targetDb.
+    private void FadeMusic(float targetDb, float duration)
+    {
+        var tween = CreateTween();
+        tween.TweenProperty(_musicPlayer, "volume_db", targetDb, duration);
+    }
+
+    // Fades the title music out, then switches scenes.
+    private async void ChangeSceneWithFade(string scenePath)
+    {
+        var tween = CreateTween();
+        tween.TweenProperty(_musicPlayer, "volume_db", MusicSilentDb, 0.6f);
+        await ToSignal(tween, Tween.SignalName.Finished);
+        GetTree().ChangeSceneToFile(scenePath);
     }
 
     // Procedural sound helper

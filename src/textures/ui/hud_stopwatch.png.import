@@ -2,12 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bm0odh20wxyfg"
-valid=false
+uid="uid://ul4w4ej602a0"
+path="res://.godot/imported/hud_stopwatch.png-084c9a06d400ea4468ebf1e5d515dbce.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://textures/ui/hud_stopwatch.png"
+dest_files=["res://.godot/imported/hud_stopwatch.png-084c9a06d400ea4468ebf1e5d515dbce.ctex"]
 
 [params]
 

@@ -8,10 +8,30 @@ public partial class Main : Node3D
     private Node3D _levelWrapper = null!;
     private Player _player = null!;
 
+    // Background music player (gameplay theme)
+    private AudioStreamPlayer _musicPlayer = null!;
+
     public override void _Ready()
     {
         _levelWrapper = GetNode<Node3D>("LevelWrapper");
         _player = GetNode<Player>("Player");
+
+        // Setup background music (gameplay theme), routed through the shared "Music" bus
+        // controlled by the options volume slider. volume_db is used as a fade envelope.
+        GameSettings.EnsureMusicBus();
+        _musicPlayer = new AudioStreamPlayer();
+        _musicPlayer.Bus = "Music";
+        AddChild(_musicPlayer);
+        var gameplayMusic = GameSettings.LoadMusic("res://audio/game-play-01.mp3");
+        if (gameplayMusic is AudioStreamMP3 mp3)
+        {
+            mp3.Loop = true;
+        }
+        _musicPlayer.Stream = gameplayMusic;
+        _musicPlayer.VolumeDb = -40.0f;
+        _musicPlayer.Play();
+        var fade = CreateTween();
+        fade.TweenProperty(_musicPlayer, "volume_db", 0.0f, 1.0f);
 
         LoadLevel();
     }
