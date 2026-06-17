@@ -7,12 +7,12 @@ public partial class Enemy : CharacterBody3D
     [Export] public float Gravity = 35.0f;
     [Export] public Vector3 Direction = Vector3.Right;
 
-    private RayCast3D? _wallRayCast;
-    private RayCast3D? _floorRayCast;
-    private Node3D? _visualsNode;
-    private CpuParticles3D? _explosionParticles;
-    private CollisionShape3D? _collisionShape;
-    private bool _isDestroyed = false;
+    protected RayCast3D? _wallRayCast;
+    protected RayCast3D? _floorRayCast;
+    protected Node3D? _visualsNode;
+    protected CpuParticles3D? _explosionParticles;
+    protected CollisionShape3D? _collisionShape;
+    protected bool _isDestroyed = false;
 
     public override void _Ready()
     {
@@ -106,14 +106,14 @@ public partial class Enemy : CharacterBody3D
         MoveAndSlide();
     }
 
-    private void OnPlayerEntered(Node3D body)
+    protected void OnPlayerEntered(Node3D body)
     {
         if (_isDestroyed) return;
 
         if (body is Player player)
         {
-            // If the player is rolling (spin dash/jump/roll state) or falling on top of the enemy
-            bool isPlayerAttacking = player.IsRolling || (player.Velocity.Y < -1.5f && player.GlobalPosition.Y > GlobalPosition.Y + 0.3f);
+            // If the player is rolling (spin dash/jump/roll state), was rolling, or falling on top of the enemy
+            bool isPlayerAttacking = player.IsRolling || player.WasRolling || (player.Velocity.Y < -1.5f && player.GlobalPosition.Y > GlobalPosition.Y + 0.3f);
             
             if (isPlayerAttacking)
             {
@@ -126,7 +126,7 @@ public partial class Enemy : CharacterBody3D
         }
     }
 
-    private void DestroyEnemy(Player player)
+    protected void DestroyEnemy(Player player)
     {
         _isDestroyed = true;
         

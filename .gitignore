@@ -36,3 +36,7 @@ mono_crash.*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+assets/platform_kit/
+
+__pycache__/

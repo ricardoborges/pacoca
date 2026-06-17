@@ -201,7 +201,7 @@ theme_override_fonts/font = ExtResource("3_Font")
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_outline_color = Color(0.07, 0.13, 0.05, 1)
 theme_override_constants/outline_size = 6
-theme_override_styles/normal = SubResource("StyleBoxTexture_green_normal")
+theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
 theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
 theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
@@ -215,9 +215,9 @@ theme_override_font_sizes/font_size = 18
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 6
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "OPÇÕES"
 
 [node name="CreditosButton" type="Button" parent="MainMenuContainer"]
@@ -228,9 +228,9 @@ theme_override_font_sizes/font_size = 18
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 6
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "CRÉDITOS"
 
 [node name="SairButton" type="Button" parent="MainMenuContainer"]
@@ -241,9 +241,9 @@ theme_override_font_sizes/font_size = 18
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 6
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "SAIR"
 
 [node name="ConfigPanel" type="PanelContainer" parent="."]
@@ -295,9 +295,9 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("3_Font")
 theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 alignment = 1
 
 [node name="MusicLabel" type="Label" parent="ConfigPanel/MarginContainer/VBoxContainer"]
@@ -321,9 +321,9 @@ theme_override_font_sizes/font_size = 11
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 4
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "Mapear Pulo/Ação"
 
 [node name="MapInstructionsLabel" type="Label" parent="ConfigPanel/MarginContainer/VBoxContainer"]
@@ -342,14 +342,14 @@ theme_override_font_sizes/font_size = 12
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 4
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "VOLTAR"
 
 [node name="LevelPanel" type="PanelContainer" parent="."]
 visible = false
-custom_minimum_size = Vector2(400, 360)
+custom_minimum_size = Vector2(400, 420)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -357,9 +357,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = -180.0
+offset_top = -210.0
 offset_right = 200.0
-offset_top = 180.0
+offset_top = 210.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
@@ -392,11 +392,37 @@ theme_override_fonts/font = ExtResource("3_Font")
 theme_override_font_sizes/font_size = 14
 theme_override_colors/font_outline_color = Color(0.07, 0.13, 0.05, 1)
 theme_override_constants/outline_size = 5
-theme_override_styles/normal = SubResource("StyleBoxTexture_green_normal")
+theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
 theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
 theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
 theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "FASE 1"
+
+[node name="Level2Button" type="Button" parent="LevelPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_Font")
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_outline_color = Color(0.07, 0.13, 0.05, 1)
+theme_override_constants/outline_size = 5
+theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
+text = "FASE 2"
+
+[node name="PlatformKitDemoButton" type="Button" parent="LevelPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_Font")
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_outline_color = Color(0.07, 0.13, 0.05, 1)
+theme_override_constants/outline_size = 5
+theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
+text = "FASE PLATFORM KIT"
 
 [node name="DebugLevelButton" type="Button" parent="LevelPanel/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 52)
@@ -406,9 +432,9 @@ theme_override_font_sizes/font_size = 12
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 5
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "FASE DE TESTE"
 
 [node name="LevelBackButton" type="Button" parent="LevelPanel/MarginContainer/VBoxContainer"]
@@ -419,9 +445,9 @@ theme_override_font_sizes/font_size = 12
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 5
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "VOLTAR"
 
 [node name="CreditsPanel" type="PanelContainer" parent="."]
@@ -485,9 +511,9 @@ theme_override_font_sizes/font_size = 12
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 5
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "VOLTAR"
 
 [node name="AchievementsPanel" type="PanelContainer" parent="."]
@@ -578,7 +604,7 @@ theme_override_font_sizes/font_size = 12
 theme_override_colors/font_outline_color = Color(0.12, 0.08, 0.04, 1)
 theme_override_constants/outline_size = 5
 theme_override_styles/normal = SubResource("StyleBoxTexture_brown_normal")
-theme_override_styles/hover = SubResource("StyleBoxTexture_brown_hover")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_brown_pressed")
-theme_override_styles/focus = SubResource("StyleBoxTexture_brown_hover")
+theme_override_styles/hover = SubResource("StyleBoxTexture_green_hover")
+theme_override_styles/pressed = SubResource("StyleBoxTexture_green_pressed")
+theme_override_styles/focus = SubResource("StyleBoxTexture_green_hover")
 text = "VOLTAR"

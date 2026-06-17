@@ -5,11 +5,13 @@ public partial class Player : CharacterBody3D
 {
     // Movement configuration (Sonic style)
     [Export] public float MaxSpeed = 24.0f;
+    // Absolute horizontal speed cap (70 km/h = 19.44 m/s). Caps spin dash, slopes and boosts.
+    [Export] public float MaxSpeedCap = 19.44f;
     [Export] public float Acceleration = 18.0f;
     [Export] public float Deceleration = 45.0f;
     [Export] public float Friction = 30.0f;
     [Export] public float Gravity = 35.0f;
-    [Export] public float JumpVelocity = 15.0f;
+    [Export] public float JumpVelocity = 21.0f;
     [Export] public float AirControl = 0.7f;
     [Export] public float SlopeAccelerationMultiplier = 15.0f;
     
@@ -21,6 +23,7 @@ public partial class Player : CharacterBody3D
     [Export] public int Lives = 3;
     [Export] public Vector3 SpawnPosition = new Vector3(-12.0f, 1.5f, 0.0f);
     public bool IsRolling = false;
+    public bool WasRolling = false;
     public bool IsSpinDashing = false;
     public float SpinDashCharge = 0.0f;
     public int Rings = 0;
@@ -117,6 +120,7 @@ public partial class Player : CharacterBody3D
 
     public override void _PhysicsProcess(double delta)
     {
+        WasRolling = IsRolling;
         float fDelta = (float)delta;
         TimeElapsed += delta;
         
@@ -204,6 +208,12 @@ public partial class Player : CharacterBody3D
             }
             // Slowly decay custom boost force
             _customBoostVelocity = _customBoostVelocity.Lerp(Vector3.Zero, 2.0f * fDelta);
+        }
+
+        // Clamp horizontal speed to the cap (80 km/h) regardless of source (spin dash, slopes, boost)
+        if (Mathf.Abs(vel.X) > MaxSpeedCap)
+        {
+            vel.X = Mathf.Sign(vel.X) * MaxSpeedCap;
         }
 
         // Apply velocities
