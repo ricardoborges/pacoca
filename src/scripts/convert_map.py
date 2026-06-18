@@ -185,7 +185,17 @@ def parse_ascii_grid(lines: list[str]) -> dict:
                 width = (c_end - c_start + 1) * 2.0
                 x = ((c_start + c_end) / 2.0) * 2.0
                 y = r * Y_STEP
-                platforms.append({"x": x, "y": y, "width": width})
+                
+                # Detect if floating (r > 0 and no solid block '#' or '/' or '\' directly below it)
+                is_floating = r > 0
+                if is_floating:
+                    for col in range(c_start, c_end + 1):
+                        char_below = get_char(col, r - 1)
+                        if char_below in ('#', '/', '\\'):
+                            is_floating = False
+                            break
+                            
+                platforms.append({"x": x, "y": y, "width": width, "rock_height": 1.0 if is_floating else 4.0})
             else:
                 c += 1
                 
@@ -288,8 +298,11 @@ def generate_python_module(level_data: dict, source_file: str) -> str:
     
     # 1. Platforms
     for i, plat in enumerate(level_data["platforms"]):
+        rock_str = ""
+        if plat.get("rock_height", 4.0) != 4.0:
+            rock_str = f', rock_height={plat["rock_height"]:.2f}'
         build_lines.append(
-            f'    b.add_platform("Platform_{i}", {plat["x"]:.2f}, {plat["y"]:.2f}, width={plat["width"]:.2f})'
+            f'    b.add_platform("Platform_{i}", {plat["x"]:.2f}, {plat["y"]:.2f}, width={plat["width"]:.2f}{rock_str})'
         )
         
     # 2. Ramps Up
@@ -387,6 +400,23 @@ def main() -> int:
         if input_path.endswith(".json"):
             with open(input_path, "r", encoding="utf-8") as f:
                 level_data = json.load(f)
+            # Normalize platforms to have rock_height
+            for plat in level_data.get("platforms", []):
+                if "rock_height" not in plat:
+                    is_floating = plat["y"] > 0.0
+                    if is_floating:
+                        plat_x_min = plat["x"] - plat["width"] / 2.0
+                        plat_x_max = plat["x"] + plat["width"] / 2.0
+                        for other in level_data.get("platforms", []):
+                            if other == plat:
+                                continue
+                            other_x_min = other["x"] - other["width"] / 2.0
+                            other_x_max = other["x"] + other["width"] / 2.0
+                            if not (plat_x_max <= other_x_min or plat_x_min >= other_x_max):
+                                if other["y"] < plat["y"] and other["y"] >= plat["y"] - 5.0:
+                                    is_floating = False
+                                    break
+                    plat["rock_height"] = 1.0 if is_floating else 4.0
         else:
             with open(input_path, "r", encoding="utf-8") as f:
                 lines = f.readlines()

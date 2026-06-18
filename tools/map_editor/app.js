@@ -424,10 +424,25 @@ function generateJSONExport() {
                 let width = (cEnd - cStart + 1) * 2.0;
                 let x = ((cStart + cEnd) / 2.0) * 2.0;
                 
+                // Detect if floating (r < gridHeight - 1 and no solid block below it visually)
+                // Note: visually, r = gridHeight - 1 is the bottom row.
+                // Visually, the row below r is r + 1.
+                let isFloating = r < gridHeight - 1;
+                if (isFloating) {
+                    for (let col = cStart; col <= cEnd; col++) {
+                        let charBelow = getCell(col, r + 1);
+                        if (charBelow === "#" || charBelow === "/" || charBelow === "\\") {
+                            isFloating = false;
+                            break;
+                        }
+                    }
+                }
+                
                 platforms.push({
                     x: parseFloat(x.toFixed(2)),
                     y: parseFloat(yCoord.toFixed(2)),
-                    width: parseFloat(width.toFixed(2))
+                    width: parseFloat(width.toFixed(2)),
+                    rock_height: isFloating ? 1.0 : 4.0
                 });
             } else {
                 c++;

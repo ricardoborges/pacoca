@@ -52,7 +52,7 @@ class NodeBuilder:
         self.nodes.append(snippet)
 
     # -- terrain ------------------------------------------------------------ #
-    def add_platform(self, name, x, y, width):
+    def add_platform(self, name, x, y, width, rock_height=4.0):
         # Grass platform
         self.nodes.append(f"""
 [node name="{name}" type="CSGBox3D" parent="Level/TrackCSG"]
@@ -61,10 +61,11 @@ size = Vector3({width:.2f}, 1, 4)
 material = ExtResource("1_GrassMat")
 """)
         # Sub rock structure
+        rock_y = y - 0.5 - (rock_height / 2.0)
         self.nodes.append(f"""
 [node name="{name}Rock" type="CSGBox3D" parent="Level/TrackCSG"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {x:.2f}, {y - 2.5:.2f}, 0)
-size = Vector3({width:.2f}, 4, 3.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {x:.2f}, {rock_y:.2f}, 0)
+size = Vector3({width:.2f}, {rock_height:.2f}, 3.8)
 material = ExtResource("2_RockMat")
 """)
 
