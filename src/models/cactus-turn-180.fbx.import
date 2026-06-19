@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b0jpmpobgbw2m"
-path="res://.godot/imported/strut-turn-180.fbx-138ab46477674a51d889255b11741b62.scn"
+path="res://.godot/imported/cactus-turn-180.fbx-54f1422e0df40261a088d107abe2fbc7.scn"
 
 [deps]
 
-source_file="res://models/strut-turn-180.fbx"
-dest_files=["res://.godot/imported/strut-turn-180.fbx-138ab46477674a51d889255b11741b62.scn"]
+source_file="res://models/cactus-turn-180.fbx"
+dest_files=["res://.godot/imported/cactus-turn-180.fbx-54f1422e0df40261a088d107abe2fbc7.scn"]
 
 [params]
 

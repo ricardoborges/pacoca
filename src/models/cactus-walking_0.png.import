@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dpof0cb44p6rl"
-path.s3tc="res://.godot/imported/strut-walking_0.png-da338538dd1030d83d916c29adb424e9.s3tc.ctex"
+path.s3tc="res://.godot/imported/cactus-walking_0.png-89cc0560160ff4682b5dfd0e08c7a5b8.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -14,8 +14,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://models/strut-walking_0.png"
-dest_files=["res://.godot/imported/strut-walking_0.png-da338538dd1030d83d916c29adb424e9.s3tc.ctex"]
+source_file="res://models/cactus-walking_0.png"
+dest_files=["res://.godot/imported/cactus-walking_0.png-89cc0560160ff4682b5dfd0e08c7a5b8.s3tc.ctex"]
 
 [params]
 

@@ -29,6 +29,7 @@ public partial class Player : CharacterBody3D
     public int Rings = 0;
     public int Score = 0;
     public double TimeElapsed = 0.0;
+    public bool IsLevelFinished = false;
     
     private bool _isInvincible = false;
     private float _invincibilityTimer = 0.0f;
@@ -121,8 +122,17 @@ public partial class Player : CharacterBody3D
 
     public override void _PhysicsProcess(double delta)
     {
-        WasRolling = IsRolling;
         float fDelta = (float)delta;
+        
+        if (IsLevelFinished)
+        {
+            Velocity = Vector3.Zero;
+            IsRolling = true;
+            UpdateVisuals(fDelta);
+            return;
+        }
+
+        WasRolling = IsRolling;
         TimeElapsed += delta;
         
         // Pit detection (falling below the level)

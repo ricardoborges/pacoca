@@ -25,6 +25,7 @@ public partial class Menu : Control
     private Button _level1Button = null!;
     private Button _level2Button = null!;
     private Button _level3Button = null!;
+    private Button _level4Button = null!;
     private Button _platformKitDemoButton = null!;
     private Button _debugLevelButton = null!;
     private Button _levelBackButton = null!;
@@ -102,6 +103,7 @@ public partial class Menu : Control
         _level1Button = GetNode<Button>("LevelPanel/MarginContainer/VBoxContainer/Level1Button");
         _level2Button = GetNode<Button>("LevelPanel/MarginContainer/VBoxContainer/Level2Button");
         _level3Button = GetNode<Button>("LevelPanel/MarginContainer/VBoxContainer/Level3Button");
+        _level4Button = GetNode<Button>("LevelPanel/MarginContainer/VBoxContainer/Level4Button");
         _platformKitDemoButton = GetNode<Button>("LevelPanel/MarginContainer/VBoxContainer/PlatformKitDemoButton");
         _debugLevelButton = GetNode<Button>("LevelPanel/MarginContainer/VBoxContainer/DebugLevelButton");
         _levelBackButton = GetNode<Button>("LevelPanel/MarginContainer/VBoxContainer/LevelBackButton");
@@ -127,6 +129,7 @@ public partial class Menu : Control
         _animatedButtons.Add(_level1Button);
         _animatedButtons.Add(_level2Button);
         _animatedButtons.Add(_level3Button);
+        _animatedButtons.Add(_level4Button);
         _animatedButtons.Add(_platformKitDemoButton);
         _animatedButtons.Add(_debugLevelButton);
         _animatedButtons.Add(_levelBackButton);
@@ -166,6 +169,7 @@ public partial class Menu : Control
         _level1Button.Pressed += OnLevel1Pressed;
         _level2Button.Pressed += OnLevel2Pressed;
         _level3Button.Pressed += OnLevel3Pressed;
+        _level4Button.Pressed += OnLevel4Pressed;
         _platformKitDemoButton.Pressed += OnPlatformKitDemoPressed;
         _debugLevelButton.Pressed += OnDebugLevelPressed;
         _levelBackButton.Pressed += OnLevelBackPressed;
@@ -311,6 +315,13 @@ public partial class Menu : Control
     {
         PlaySound(1046.50f, 0.15f, 0.4f); // C6 note confirm sound
         GameSettings.LevelToLoad = "res://scenes/levels/level_03.tscn";
+        ChangeSceneWithFade("res://scenes/main.tscn");
+    }
+
+    private void OnLevel4Pressed()
+    {
+        PlaySound(1046.50f, 0.15f, 0.4f); // C6 note confirm sound
+        GameSettings.LevelToLoad = "res://scenes/levels/level_04.tscn";
         ChangeSceneWithFade("res://scenes/main.tscn");
     }
 
@@ -478,6 +489,7 @@ public partial class Menu : Control
         _level1Button.Disabled = disabled;
         _level2Button.Disabled = disabled;
         _level3Button.Disabled = disabled;
+        _level4Button.Disabled = disabled;
         _platformKitDemoButton.Disabled = disabled;
         _debugLevelButton.Disabled = disabled;
         _levelBackButton.Disabled = disabled;

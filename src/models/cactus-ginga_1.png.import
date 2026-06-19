@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://de5ms28hvv6da"
-path.s3tc="res://.godot/imported/strut-ginga_1.png-0361438a9ae7cce6d025c79cb7864183.s3tc.ctex"
+path.s3tc="res://.godot/imported/cactus-ginga_1.png-0f48796b7c1d161566f59ded23667091.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -14,8 +14,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://models/strut-ginga_1.png"
-dest_files=["res://.godot/imported/strut-ginga_1.png-0361438a9ae7cce6d025c79cb7864183.s3tc.ctex"]
+source_file="res://models/cactus-ginga_1.png"
+dest_files=["res://.godot/imported/cactus-ginga_1.png-0f48796b7c1d161566f59ded23667091.s3tc.ctex"]
 
 [params]
 

@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c8eivoekjuph5"
-path="res://.godot/imported/strut-walking.fbx-91605f48656ae64c815f8809c8508a36.scn"
+path="res://.godot/imported/cactus-walking.fbx-50c21ceab982231d9cfbded2e0c90ef5.scn"
 
 [deps]
 
-source_file="res://models/strut-walking.fbx"
-dest_files=["res://.godot/imported/strut-walking.fbx-91605f48656ae64c815f8809c8508a36.scn"]
+source_file="res://models/cactus-walking.fbx"
+dest_files=["res://.godot/imported/cactus-walking.fbx-50c21ceab982231d9cfbded2e0c90ef5.scn"]
 
 [params]
 

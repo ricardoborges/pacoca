@@ -10,7 +10,6 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="8_EnemyScene"]
 [ext_resource type="PackedScene" path="res://scenes/cactus_enemy.tscn" id="9_CactusEnemyScene"]
 [ext_resource type="PackedScene" path="res://scenes/spikes.tscn" id="10_SpikesScene"]
-[ext_resource type="PackedScene" path="res://scenes/level_finish.tscn" id="11_LevelFinishScene"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_water"]
 material = ExtResource("3_WaterMat")
@@ -1642,5 +1641,5 @@ size = Vector3(40.00, 4.00, 3.8)
 material = ExtResource("2_RockMat")
 
 
-[node name="GoalCoin" parent="InteractiveObjects" instance=ExtResource("11_LevelFinishScene")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2005.00, 10.50, 0)
+[node name="LevelGoal" parent="InteractiveObjects" instance=ExtResource("11_GoalScene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2005.00, 8.50, 0)

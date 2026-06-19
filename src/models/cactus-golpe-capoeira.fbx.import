@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://b822ofxst6y05"
-path="res://.godot/imported/strut-golpe-capoeira.fbx-f33db92f2a53ec11e3fbba87a075133c.scn"
+path="res://.godot/imported/cactus-golpe-capoeira.fbx-9c1b6cf86a701ca663d58b057af1fdf5.scn"
 
 [deps]
 
-source_file="res://models/strut-golpe-capoeira.fbx"
-dest_files=["res://.godot/imported/strut-golpe-capoeira.fbx-f33db92f2a53ec11e3fbba87a075133c.scn"]
+source_file="res://models/cactus-golpe-capoeira.fbx"
+dest_files=["res://.godot/imported/cactus-golpe-capoeira.fbx-9c1b6cf86a701ca663d58b057af1fdf5.scn"]
 
 [params]
 

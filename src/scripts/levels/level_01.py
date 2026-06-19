@@ -29,6 +29,20 @@ def base_edits(content: str) -> str:
         label="ext_resource spikes",
     )
 
+    # 1b. Register level finish scene as external resource
+    finish_anchor = (
+        '[ext_resource type="PackedScene" path="res://scenes/spikes.tscn" '
+        'id="10_SpikesScene"]'
+    )
+    content = apply_modification(
+        content,
+        finish_anchor,
+        finish_anchor
+        + '\n[ext_resource type="PackedScene" path="res://scenes/level_finish.tscn" '
+        'id="11_LevelFinishScene"]',
+        label="ext_resource level_finish",
+    )
+
     # 2. Water plane mesh size.
     content = apply_modification(
         content,
@@ -367,3 +381,6 @@ material = ExtResource("2_RockMat")
 
     # New Goal Arena
     b.add_platform("GoalPlatformNew", 2005.0, 8.0, width=40.0)
+
+    # Goal Coin
+    b.add_level_finish("GoalCoin", 2005.0, 10.5)

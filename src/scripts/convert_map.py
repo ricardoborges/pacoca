@@ -29,6 +29,7 @@ TSCN_TEMPLATE = """[gd_scene format=3 uid="uid://c33r1q6joc2l{level}"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="8_EnemyScene"]
 [ext_resource type="PackedScene" path="res://scenes/cactus_enemy.tscn" id="9_CactusEnemyScene"]
 [ext_resource type="PackedScene" path="res://scenes/spikes.tscn" id="10_SpikesScene"]
+[ext_resource type="PackedScene" path="res://scenes/level_finish.tscn" id="11_LevelFinishScene"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_water"]
 material = ExtResource("3_WaterMat")
@@ -138,9 +139,9 @@ def parse_ascii_grid(lines: list[str]) -> dict:
     # Pad all lines to same width
     padded_grid = [line.ljust(W) for line in grid_lines]
     
-    # Read ystep setting (default to 4.0)
+    # Read ystep setting (default to 1.6)
     ystep_val = settings.get("ystep") or settings.get("y_step")
-    Y_STEP = float(ystep_val) if ystep_val is not None else 4.0
+    Y_STEP = float(ystep_val) if ystep_val is not None else 3
     
     # We will build structures by scanning the grid cells
     # Column width: 2.0 (X)
@@ -156,6 +157,7 @@ def parse_ascii_grid(lines: list[str]) -> dict:
     enemies = []
     cactus_enemies = []
     spikes = []
+    goals = []
     spawn = None
     
     visited_hashes = set()
@@ -267,6 +269,8 @@ def parse_ascii_grid(lines: list[str]) -> dict:
                 spikes.append([x, (r - 1) * Y_STEP + 0.5])
             elif char == 'P': # Player Spawn
                 spawn = [x, (r - 1) * Y_STEP + 1.5]
+            elif char == 'G': # Goal / Level Finish
+                goals.append([x, (r - 1) * Y_STEP + 2.0])
                 
     # If no spawn point was specified, place it default
     if spawn is None:
@@ -285,7 +289,8 @@ def parse_ascii_grid(lines: list[str]) -> dict:
         "dash_pads": dash_pads,
         "enemies": enemies,
         "cactus_enemies": cactus_enemies,
-        "spikes": spikes
+        "spikes": spikes,
+        "goals": goals
     }
 
 # --------------------------------------------------------------------------- #
@@ -359,6 +364,13 @@ def generate_python_module(level_data: dict, source_file: str) -> str:
         build_lines.append(
             f'    b.add_spikes("Spikes_{i}", {spike[0]:.2f}, {spike[1]:.2f})'
         )
+        
+    # 11. Goals
+    if "goals" in level_data:
+        for i, goal in enumerate(level_data["goals"]):
+            build_lines.append(
+                f'    b.add_level_finish("Goal_{i}", {goal[0]:.2f}, {goal[1]:.2f})'
+            )
         
     build_code = "\n".join(build_lines)
     if not build_code:

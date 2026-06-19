@@ -8,6 +8,7 @@ public partial class Main : Node3D
     private Node3D _levelWrapper = null!;
     private Player _player = null!;
     private CameraController _camera = null!;
+    private LevelFinishScreen _finishScreen = null!;
 
     // Background music player (gameplay theme)
     private AudioStreamPlayer _musicPlayer = null!;
@@ -17,6 +18,7 @@ public partial class Main : Node3D
         _levelWrapper = GetNode<Node3D>("LevelWrapper");
         _player = GetNode<Player>("Player");
         _camera = GetNode<CameraController>("Camera3D");
+        _finishScreen = GetNode<LevelFinishScreen>("HUDLayer/LevelFinishScreen");
 
         // Setup background music (gameplay theme), routed through the shared "Music" bus
         // controlled by the options volume slider. volume_db is used as a fade envelope.
@@ -89,6 +91,20 @@ public partial class Main : Node3D
     public void RestartStage()
     {
         LoadLevel();
+    }
+
+    public void CompleteLevel(int rings, int score, double timeElapsed)
+    {
+        // Stop background gameplay music with fade out
+        if (_musicPlayer != null && _musicPlayer.Playing)
+        {
+            var fade = CreateTween();
+            fade.TweenProperty(_musicPlayer, "volume_db", -40.0f, 0.8f);
+            fade.TweenCallback(Callable.From(() => _musicPlayer.Stop()));
+        }
+
+        // Display completion statistics overlay screen
+        _finishScreen.ShowScreen(rings, score, timeElapsed);
     }
 }
 

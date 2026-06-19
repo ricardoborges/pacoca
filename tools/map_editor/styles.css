@@ -28,6 +28,7 @@
     --color-cactus: #84cc16; /* Lime Green */
     --color-spikes: #e11d48; /* Rose */
     --color-spawn: #ec4899; /* Pink */
+    --color-goal: #ffd700; /* Gold */
     
     --transition-fast: 0.15s ease;
     --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -656,6 +657,24 @@ body {
     font-size: 0.75rem;
     font-weight: 800;
     box-shadow: 0 0 10px var(--color-spawn);
+    border: 2px solid white;
+}
+
+.grid-cell.goal {
+    color: white;
+}
+.grid-cell.goal::before {
+    content: 'G';
+    width: 26px;
+    height: 26px;
+    background: var(--color-goal);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    box-shadow: 0 0 12px var(--color-goal);
     border: 2px solid white;
 }
 

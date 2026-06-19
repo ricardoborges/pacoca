@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cu0cng08urrqy"
-path="res://.godot/imported/strut-ginga.fbx-24dbb324d500fe85398c01e055ab293e.scn"
+path="res://.godot/imported/cactus-ginga.fbx-d57b893f49eee210b1e95c3055be0e14.scn"
 
 [deps]
 
-source_file="res://models/strut-ginga.fbx"
-dest_files=["res://.godot/imported/strut-ginga.fbx-24dbb324d500fe85398c01e055ab293e.scn"]
+source_file="res://models/cactus-ginga.fbx"
+dest_files=["res://.godot/imported/cactus-ginga.fbx-d57b893f49eee210b1e95c3055be0e14.scn"]
 
 [params]
 

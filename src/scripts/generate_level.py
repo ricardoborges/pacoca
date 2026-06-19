@@ -152,6 +152,12 @@ Speed = {speed:.2f}
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {x:.2f}, {y:.2f}, 0)
 """)
 
+    def add_level_finish(self, name, x, y):
+        self.nodes.append(f"""
+[node name="{name}" parent="InteractiveObjects" instance=ExtResource("11_LevelFinishScene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, {x:.2f}, {y:.2f}, 0)
+""")
+
 
 # --------------------------------------------------------------------------- #
 # Safe text surgery (shared with level modules)

@@ -24,7 +24,8 @@ const ELEMENTS = [
     { symbol: "E", name: "Inimigo Robô", class: "enemy", desc: "Inimigo patrulheiro padrão (Speed: 3)", color: "var(--color-enemy)" },
     { symbol: "C", name: "Inimigo Cacto", class: "cactus", desc: "Cacto patrulheiro (Speed: 1.25)", color: "var(--color-cactus)" },
     { symbol: "S", name: "Espinhos", class: "spikes", desc: "Espinhos no chão que causam dano", color: "var(--color-spikes)" },
-    { symbol: "P", name: "Spawn Jogador", class: "spawn", desc: "Ponto inicial do jogador (Z:0, Y: Spawn + 0.5)", color: "var(--color-spawn)" }
+    { symbol: "P", name: "Spawn Jogador", class: "spawn", desc: "Ponto inicial do jogador (Z:0, Y: Spawn + 0.5)", color: "var(--color-spawn)" },
+    { symbol: "G", name: "Moeda Fim de Fase", class: "goal", desc: "Moeda gigante giratória que finaliza a fase", color: "var(--color-goal)" }
 ];
 
 // --- Initialization ---
@@ -396,6 +397,7 @@ function generateJSONExport() {
     let enemies = [];
     let cactus_enemies = [];
     let spikes = [];
+    let goals = [];
     
     // Scanners and mergers
     let visitedHashes = new Set();
@@ -549,6 +551,8 @@ function generateJSONExport() {
                 spikes.push([parseFloat(xCoord.toFixed(2)), parseFloat(((gridHeight - 1 - r - 1) * Y_STEP + 0.5).toFixed(2))]);
             } else if (char === "P") {
                 spawn = [parseFloat(xCoord.toFixed(2)), parseFloat(((gridHeight - 1 - r - 1) * Y_STEP + 1.5).toFixed(2))];
+            } else if (char === "G") {
+                goals.push([parseFloat(xCoord.toFixed(2)), parseFloat(((gridHeight - 1 - r - 1) * Y_STEP + 2.0).toFixed(2))]);
             }
         }
     }
@@ -566,7 +570,8 @@ function generateJSONExport() {
         dash_pads: dash_pads,
         enemies: enemies,
         cactus_enemies: cactus_enemies,
-        spikes: spikes
+        spikes: spikes,
+        goals: goals
     };
     
     document.getElementById("json-output").value = JSON.stringify(jsonObj, null, 2);
@@ -676,6 +681,7 @@ function importJSON(data) {
     scanArray(data.enemies);
     scanArray(data.cactus_enemies);
     scanArray(data.spikes);
+    scanArray(data.goals);
     
     // Re-initialize grid size
     gridWidth = maxX + 10; // Extra padding
@@ -801,6 +807,12 @@ function importJSON(data) {
         data.spikes.forEach(item => {
             const r = Math.round((item[1] - 0.5) / import_Y_STEP) + 1;
             setElementAt(item[0], r, "S");
+        });
+    }
+    if (data.goals) {
+        data.goals.forEach(item => {
+            const r = Math.round((item[1] - 2.0) / import_Y_STEP) + 1;
+            setElementAt(item[0], r, "G");
         });
     }
     

@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bd4xxlmqlpurr"
-path.s3tc="res://.godot/imported/strut-turn-180_1.png-f852eb1409a7743f1f984387b9d86084.s3tc.ctex"
+path.s3tc="res://.godot/imported/cactus-turn-180_1.png-183708491457c13221933fd7505c715b.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -14,8 +14,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://models/strut-turn-180_1.png"
-dest_files=["res://.godot/imported/strut-turn-180_1.png-f852eb1409a7743f1f984387b9d86084.s3tc.ctex"]
+source_file="res://models/cactus-turn-180_1.png"
+dest_files=["res://.godot/imported/cactus-turn-180_1.png-183708491457c13221933fd7505c715b.s3tc.ctex"]
 
 [params]
 

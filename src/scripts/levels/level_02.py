@@ -13,15 +13,26 @@ already in place, so no surgical ``base_edits`` are needed here.
 
 from __future__ import annotations
 
-from generate_level import NodeBuilder
+from generate_level import NodeBuilder, apply_modification
 
 # First node emitted by ``build`` -- the regeneration anchor.
 ANCHOR = '[node name="L2_Start1"'
 
 
 def base_edits(content: str) -> str:
-    # The level_02 base scaffold is authored directly; nothing to patch.
-    return content
+    # Register level finish scene as external resource
+    finish_anchor = (
+        '[ext_resource type="PackedScene" path="res://scenes/spikes.tscn" '
+        'id="10_SpikesScene"]'
+    )
+    return apply_modification(
+        content,
+        finish_anchor,
+        finish_anchor
+        + '\n[ext_resource type="PackedScene" path="res://scenes/level_finish.tscn" '
+        'id="11_LevelFinishScene"]',
+        label="ext_resource level_finish",
+    )
 
 
 def build(b: NodeBuilder) -> None:
@@ -131,3 +142,6 @@ def build(b: NodeBuilder) -> None:
     b.add_ring("L2_Victory4", 1220.0, 13.5)
 
     b.add_platform("L2_GoalArena", 1250.0, 8.0, width=40.0)
+
+    # Goal Coin
+    b.add_level_finish("L2_GoalFinish", 1250.0, 10.5)
