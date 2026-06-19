@@ -1,7 +1,7 @@
 // --- Application State ---
 const Y_STEP = 3.0;
 let levelId = "04";
-let levelName = "Ruínas Celestes";
+let levelName = "Sky Ruins";
 let gridWidth = 100;
 let gridHeight = 15;
 let grid = []; // 2D array: grid[c][r] where c is column (X), r is visual row (Y-inverted)
@@ -14,18 +14,18 @@ let activeTab = "tab-ascii";
 
 // --- Elements Catalog ---
 const ELEMENTS = [
-    { symbol: "#", name: "Plataforma Grama", class: "platform", desc: "Bloco sólido básico (CSGBox3D)", color: "var(--color-platform)" },
-    { symbol: "/", name: "Rampa Subindo", class: "ramp-up", desc: "Rampa sólida diagonal direita", color: "var(--color-slope)" },
-    { symbol: "\\", name: "Rampa Descendo", class: "ramp-down", desc: "Rampa sólida diagonal esquerda", color: "var(--color-slope)" },
-    { symbol: "o", name: "Anel", class: "ring", desc: "Item colecionável para pontos/vida", color: "var(--color-ring)" },
-    { symbol: "V", name: "Mola Vertical", class: "spring-v", desc: "Impulso vertical alto (LaunchForce: 22)", color: "var(--color-spring-v)" },
-    { symbol: "F", name: "Mola Diagonal", class: "spring-d", desc: "Impulso diagonal frente (LaunchForce: 25)", color: "var(--color-spring-d)" },
-    { symbol: "D", name: "Acelerador (Dash)", class: "dash", desc: "Impulsiona o player para frente no rolo", color: "var(--color-dash)" },
-    { symbol: "E", name: "Inimigo Robô", class: "enemy", desc: "Inimigo patrulheiro padrão (Speed: 3)", color: "var(--color-enemy)" },
-    { symbol: "C", name: "Inimigo Cacto", class: "cactus", desc: "Cacto patrulheiro (Speed: 1.25)", color: "var(--color-cactus)" },
-    { symbol: "S", name: "Espinhos", class: "spikes", desc: "Espinhos no chão que causam dano", color: "var(--color-spikes)" },
-    { symbol: "P", name: "Spawn Jogador", class: "spawn", desc: "Ponto inicial do jogador (Z:0, Y: Spawn + 0.5)", color: "var(--color-spawn)" },
-    { symbol: "G", name: "Moeda Fim de Fase", class: "goal", desc: "Moeda gigante giratória que finaliza a fase", color: "var(--color-goal)" }
+    { symbol: "#", name: "Grass Platform", class: "platform", desc: "Basic solid block (CSGBox3D)", color: "var(--color-platform)" },
+    { symbol: "/", name: "Ramp Up", class: "ramp-up", desc: "Solid diagonal ramp rising right", color: "var(--color-slope)" },
+    { symbol: "\\", name: "Ramp Down", class: "ramp-down", desc: "Solid diagonal ramp falling right", color: "var(--color-slope)" },
+    { symbol: "o", name: "Ring", class: "ring", desc: "Collectible item for points/lives", color: "var(--color-ring)" },
+    { symbol: "V", name: "Vertical Spring", class: "spring-v", desc: "High vertical launch (LaunchForce: 22)", color: "var(--color-spring-v)" },
+    { symbol: "F", name: "Diagonal Spring", class: "spring-d", desc: "Forward diagonal launch (LaunchForce: 25)", color: "var(--color-spring-d)" },
+    { symbol: "D", name: "Booster (Dash)", class: "dash", desc: "Boosts player forward into roll state", color: "var(--color-dash)" },
+    { symbol: "E", name: "Robot Enemy", class: "enemy", desc: "Standard patrolling enemy (Speed: 3)", color: "var(--color-enemy)" },
+    { symbol: "C", name: "Cactus Enemy", class: "cactus", desc: "Patrolling cactus (Speed: 1.25)", color: "var(--color-cactus)" },
+    { symbol: "S", name: "Spikes", class: "spikes", desc: "Ground spikes that cause damage", color: "var(--color-spikes)" },
+    { symbol: "P", name: "Player Spawn", class: "spawn", desc: "Player starting point (Z:0, Y: Spawn + 0.5)", color: "var(--color-spawn)" },
+    { symbol: "G", name: "Goal Coin", class: "goal", desc: "Giant spinning coin that finishes the stage", color: "var(--color-goal)" }
 ];
 
 // --- Initialization ---
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         if (e.key === "F5") {
-            e.preventDefault(); // não recarregar a página
+            e.preventDefault(); // do not reload the page
             testLevel();
             return;
         }
@@ -240,6 +240,7 @@ function applyTool(c, r) {
     }
 }
 
+// Selects active palette element
 function selectElement(symbol, elementBtn) {
     selectedElement = symbol;
     currentTool = "paint";
@@ -266,7 +267,7 @@ function setToolMode(mode) {
 }
 
 function clearGrid() {
-    if (confirm("Tem certeza que deseja limpar todo o grid? Todos os dados não salvos serão perdidos.")) {
+    if (confirm("Are you sure you want to clear the entire grid? All unsaved data will be lost.")) {
         for (let c = 0; c < gridWidth; c++) {
             for (let r = 0; r < gridHeight; r++) {
                 grid[c][r] = " ";
@@ -274,7 +275,7 @@ function clearGrid() {
         }
         renderGrid();
         generateExports();
-        showToast("Grid limpo com sucesso!", "trash-2");
+        showToast("Grid cleared successfully!", "trash-2");
     }
 }
 
@@ -321,7 +322,7 @@ function rebuildGrid() {
     
     renderGrid();
     generateExports();
-    showToast(`Grid redimensionado para ${gridWidth}x${gridHeight}`, "grid");
+    showToast(`Grid resized to ${gridWidth}x${gridHeight}`, "grid");
 }
 
 // --- Viewport Zoom & Gridlines Control ---
@@ -365,7 +366,7 @@ function updateCoordinatesDisplay(c, r) {
     const yCoord = ((gridHeight - 1 - r) * Y_STEP).toFixed(1);
     
     document.getElementById("coord-display").innerText =
-        `Col ${c}, Lin ${r}  ·  X: ${xCoord}m  Y: ${yCoord}m`;
+        `Col ${c}, Row ${r}  ·  X: ${xCoord}m  Y: ${yCoord}m`;
 }
 
 // --- Exporters (ASCII & JSON) ---
@@ -607,7 +608,7 @@ function updateDynamicTexts() {
 function importMap() {
     const text = document.getElementById("import-input").value.trim();
     if (!text) {
-        alert("Cole o código do mapa para importar!");
+        alert("Paste the map code to import!");
         return;
     }
     
@@ -621,13 +622,13 @@ function importMap() {
             importASCII(text);
         }
     } catch (e) {
-        alert("Erro ao importar o mapa. Certifique-se de que o formato do texto está correto.\nErro: " + e.message);
+        alert("Error importing map. Make sure the text format is correct.\nError: " + e.message);
     }
 }
 
 function importJSON(data) {
     levelId = data.level || "03";
-    levelName = data.name || "Nível Importado";
+    levelName = data.name || "Imported Level";
     
     document.getElementById("level-id").value = levelId;
     document.getElementById("level-name").value = levelName;
@@ -833,7 +834,7 @@ function importJSON(data) {
     
     renderGrid();
     generateExports();
-    showToast(`Mapa JSON importado com sucesso! Nível: ${levelId}`, "upload");
+    showToast(`JSON map imported successfully! Level: ${levelId}`, "upload");
 }
 
 function importASCII(text) {
@@ -879,7 +880,7 @@ function importASCII(text) {
     }
     
     if (gridLines.length === 0) {
-        throw new Error("Seção '[grid]' não encontrada ou vazia no texto colado.");
+        throw new Error("'[grid]' section not found or empty in pasted text.");
     }
     
     // Establish dimensions
@@ -910,7 +911,7 @@ function importASCII(text) {
     renderGrid();
     updateDynamicTexts();
     generateExports();
-    showToast(`Mapa ASCII importado com sucesso! Nível: ${levelId}`, "upload");
+    showToast(`ASCII map imported successfully! Level: ${levelId}`, "upload");
 }
 
 // --- Utilities (Copy / Download / Notifications) ---
@@ -937,11 +938,11 @@ function copyToClipboard(elementId) {
     
     try {
         navigator.clipboard.writeText(textarea.value);
-        showToast("Copiado para a área de transferência!", "check");
+        showToast("Copied to clipboard!", "check");
     } catch (err) {
         // Fallback
         document.execCommand("copy");
-        showToast("Copiado!", "check");
+        showToast("Copied!", "check");
     }
 }
 
@@ -949,9 +950,9 @@ function copyCommand() {
     const cmdText = document.getElementById("compile-command").innerText;
     try {
         navigator.clipboard.writeText(cmdText);
-        showToast("Comando copiado!", "terminal");
+        showToast("Command copied!", "terminal");
     } catch (err) {
-        showToast("Erro ao copiar comando.", "alert-triangle");
+        showToast("Error copying command.", "alert-triangle");
     }
 }
 
@@ -962,15 +963,16 @@ function openMaps() {
     modal.hidden = false;
     lucide.createIcons();
     const hint = document.getElementById("maps-savehint");
-    hint.textContent = `Salva como level_${(levelId || "").padStart(2, "0")}_map.txt em tools/map_editor/levels/`;
+    hint.textContent = `Saves as level_${(levelId || "").padStart(2, "0")}_map.txt in tools/map_editor/levels/`;
     if (location.protocol === "file:") {
         document.getElementById("maps-list").innerHTML =
-            '<p class="tab-note">Requer o servidor local (python tools/map_editor/server.py).</p>';
+            '<p class="tab-note">Requires the local server (python tools/map_editor/server.py).</p>';
         return;
     }
     refreshMapsList();
 }
 
+// Closes maps modal
 function closeMaps() {
     document.getElementById("maps-modal").hidden = true;
 }
@@ -981,7 +983,7 @@ function onMapsBackdrop(e) {
 
 function formatMtime(epochSeconds) {
     try {
-        return new Date(epochSeconds * 1000).toLocaleString("pt-BR", {
+        return new Date(epochSeconds * 1000).toLocaleString("en-US", {
             day: "2-digit", month: "2-digit", year: "numeric",
             hour: "2-digit", minute: "2-digit"
         });
@@ -992,20 +994,20 @@ function formatMtime(epochSeconds) {
 
 async function refreshMapsList() {
     const list = document.getElementById("maps-list");
-    list.innerHTML = '<p class="tab-note">Carregando…</p>';
+    list.innerHTML = '<p class="tab-note">Loading...</p>';
     try {
         const resp = await fetch("/api/maps");
         const data = await resp.json();
         const maps = (data && data.maps) || [];
         if (!maps.length) {
-            list.innerHTML = '<p class="tab-note">Nenhum mapa salvo ainda. Desenhe e clique em "Salvar mapa atual".</p>';
+            list.innerHTML = '<p class="tab-note">No maps saved yet. Draw and click "Save current map".</p>';
             return;
         }
         list.innerHTML = "";
         maps.forEach(m => {
             const row = document.createElement("div");
             row.className = "map-row";
-            const name = m.name ? m.name : "(sem nome)";
+            const name = m.name ? m.name : "(no name)";
             row.innerHTML = `
                 <div class="map-meta">
                     <span class="map-badge">${m.level}</span>
@@ -1015,8 +1017,8 @@ async function refreshMapsList() {
                     </div>
                 </div>
                 <div class="map-actions">
-                    <button class="btn btn-sm btn-secondary" title="Abrir para editar"><i data-lucide="pencil"></i> Editar</button>
-                    <button class="btn btn-sm btn-danger-outline" title="Excluir"><i data-lucide="trash-2"></i></button>
+                    <button class="btn btn-sm btn-secondary" title="Open to edit"><i data-lucide="pencil"></i> Edit</button>
+                    <button class="btn btn-sm btn-danger-outline" title="Delete"><i data-lucide="trash-2"></i></button>
                 </div>
             `;
             const [editBtn, delBtn] = row.querySelectorAll("button");
@@ -1026,12 +1028,12 @@ async function refreshMapsList() {
         });
         lucide.createIcons();
     } catch (err) {
-        list.innerHTML = '<p class="tab-note">Servidor local não encontrado.</p>';
+        list.innerHTML = '<p class="tab-note">Local server not found.</p>';
     }
 }
 
 async function saveCurrentMap() {
-    if (location.protocol === "file:") { showToast("Requer o servidor local", "alert-triangle"); return; }
+    if (location.protocol === "file:") { showToast("Requires local server", "alert-triangle"); return; }
     try {
         const content = document.getElementById("ascii-output").value;
         const resp = await fetch("/api/maps", {
@@ -1041,13 +1043,13 @@ async function saveCurrentMap() {
         });
         const data = await resp.json();
         if (data.ok) {
-            showToast(`Mapa salvo: ${data.file}`, "save");
+            showToast(`Map saved: ${data.file}`, "save");
             refreshMapsList();
         } else {
-            showToast(data.error || "Falha ao salvar", "alert-triangle");
+            showToast(data.error || "Failed to save", "alert-triangle");
         }
     } catch (err) {
-        showToast("Servidor local não encontrado", "alert-triangle");
+        showToast("Local server not found", "alert-triangle");
     }
 }
 
@@ -1056,7 +1058,7 @@ async function openMap(level, format) {
         const resp = await fetch(`/api/maps/item?level=${encodeURIComponent(level)}&format=${encodeURIComponent(format)}`);
         const data = await resp.json();
         if (!data.ok) {
-            showToast(data.error || "Falha ao abrir", "alert-triangle");
+            showToast(data.error || "Failed to open", "alert-triangle");
             return;
         }
         if (data.format === "json") {
@@ -1065,14 +1067,14 @@ async function openMap(level, format) {
             importASCII(data.content);
         }
         closeMaps();
-        showToast(`Mapa ${data.level} carregado para edição`, "pencil");
+        showToast(`Map ${data.level} loaded for editing`, "pencil");
     } catch (err) {
-        showToast("Servidor local não encontrado", "alert-triangle");
+        showToast("Local server not found", "alert-triangle");
     }
 }
 
 async function deleteMap(level, format, name) {
-    if (!confirm(`Excluir o mapa do nível ${level}${name ? ` ("${name}")` : ""}? Esta ação não pode ser desfeita.`)) return;
+    if (!confirm(`Delete map for level ${level}${name ? ` ("${name}")` : ""}? This action cannot be undone.`)) return;
     try {
         const resp = await fetch("/api/maps/delete", {
             method: "POST",
@@ -1081,13 +1083,13 @@ async function deleteMap(level, format, name) {
         });
         const data = await resp.json();
         if (data.ok) {
-            showToast(`Mapa ${level} excluído`, "trash-2");
+            showToast(`Map ${level} deleted`, "trash-2");
             refreshMapsList();
         } else {
-            showToast(data.error || "Falha ao excluir", "alert-triangle");
+            showToast(data.error || "Failed to delete", "alert-triangle");
         }
     } catch (err) {
-        showToast("Servidor local não encontrado", "alert-triangle");
+        showToast("Local server not found", "alert-triangle");
     }
 }
 
@@ -1100,10 +1102,10 @@ function escapeHtml(s) {
 // --- Godot path configuration ---
 
 const GODOT_SOURCE_LABELS = {
-    saved: "definido manualmente",
-    env: "variável GODOT_BIN",
-    path: "detectado no PATH",
-    default: "caminho padrão",
+    saved: "manually defined",
+    env: "GODOT_BIN env variable",
+    path: "detected in PATH",
+    default: "default path",
 };
 
 function applyGodotConfig(data) {
@@ -1114,16 +1116,16 @@ function applyGodotConfig(data) {
     }
     status.classList.remove("ok", "bad");
     if (!data || !data.ok) {
-        status.textContent = "Não foi possível ler a configuração.";
+        status.textContent = "Could not read configuration.";
         status.classList.add("bad");
         return;
     }
     const label = GODOT_SOURCE_LABELS[data.source] || data.source;
     if (data.exists) {
-        status.textContent = `✓ Godot encontrado · ${label}`;
+        status.textContent = `✓ Godot found · ${label}`;
         status.classList.add("ok");
     } else {
-        status.textContent = `✗ Não encontrado neste caminho (${label})`;
+        status.textContent = `✗ Not found at this path (${label})`;
         status.classList.add("bad");
     }
 }
@@ -1144,7 +1146,7 @@ function openSettings() {
     lucide.createIcons();
     if (location.protocol === "file:") {
         const status = document.getElementById("godot-status");
-        status.textContent = "Requer o servidor local (python tools/map_editor/server.py).";
+        status.textContent = "Requires the local server (python tools/map_editor/server.py).";
         status.classList.remove("ok");
         status.classList.add("bad");
         return;
@@ -1171,42 +1173,42 @@ async function postGodotConfig(godotBin) {
 }
 
 async function detectGodot() {
-    if (location.protocol === "file:") { showToast("Requer o servidor local", "alert-triangle"); return; }
+    if (location.protocol === "file:") { showToast("Requires local server", "alert-triangle"); return; }
     try {
         // Clearing the saved value makes the server auto-detect (env -> PATH -> default).
         const data = await postGodotConfig("");
         applyGodotConfig(data);
-        if (data.exists && data.source === "path") showToast("Godot detectado no PATH!", "check");
-        else if (data.exists) showToast("Usando Godot (" + (GODOT_SOURCE_LABELS[data.source] || data.source) + ")", "check");
-        else showToast("Godot não encontrado no PATH — informe o caminho", "alert-triangle");
+        if (data.exists && data.source === "path") showToast("Godot detected in PATH!", "check");
+        else if (data.exists) showToast("Using Godot (" + (GODOT_SOURCE_LABELS[data.source] || data.source) + ")", "check");
+        else showToast("Godot not found in PATH — specify the path", "alert-triangle");
     } catch (err) {
-        showToast("Servidor local não encontrado", "alert-triangle");
+        showToast("Local server not found", "alert-triangle");
     }
 }
 
 async function saveGodotPath() {
-    if (location.protocol === "file:") { showToast("Requer o servidor local", "alert-triangle"); return; }
+    if (location.protocol === "file:") { showToast("Requires local server", "alert-triangle"); return; }
     const value = document.getElementById("godot-path").value.trim();
     try {
         const data = await postGodotConfig(value);
         applyGodotConfig(data);
-        if (data.exists) showToast("Caminho do Godot salvo!", "check");
-        else showToast("Salvo, mas o caminho não existe", "alert-triangle");
+        if (data.exists) showToast("Godot path saved!", "check");
+        else showToast("Saved, but the path does not exist", "alert-triangle");
     } catch (err) {
-        showToast("Servidor local não encontrado", "alert-triangle");
+        showToast("Local server not found", "alert-triangle");
     }
 }
 
 async function testLevel() {
     if (location.protocol === "file:") {
-        showToast("Use o servidor local para testar a fase", "alert-triangle");
+        showToast("Use the local server to test the stage", "alert-triangle");
         return;
     }
 
     const btn = document.getElementById("btn-test-level");
     const resultBox = document.getElementById("compile-result");
     btn.disabled = true;
-    showToast("Compilando fase " + levelId + "...", "hammer");
+    showToast("Compiling level " + levelId + "...", "hammer");
 
     try {
         // 1. Compile the current ASCII map.
@@ -1222,15 +1224,15 @@ async function testLevel() {
             openDrawerTab("tab-instructions");
             resultBox.hidden = false;
             resultBox.textContent =
-                "❌ Falha ao compilar:\n\n" +
+                "❌ Compilation failed:\n\n" +
                 ((cData.stderr || cData.error || "").trim()) +
                 (cData.stdout ? "\n\n" + cData.stdout.trim() : "");
-            showToast("Falha na compilação", "alert-triangle");
+            showToast("Compilation failed", "alert-triangle");
             return;
         }
 
         // 2. Launch Godot straight into this level.
-        showToast("Compilado! Iniciando Godot...", "gamepad-2");
+        showToast("Compiled! Starting Godot...", "gamepad-2");
         const rResp = await fetch("/api/run", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1239,18 +1241,18 @@ async function testLevel() {
         const rData = await rResp.json();
 
         if (rData.ok) {
-            showToast(`Testando a fase ${rData.level} no Godot!`, "check");
+            showToast(`Testing level ${rData.level} in Godot!`, "check");
             if (rData.build_warning) showToast(rData.build_warning, "alert-triangle");
         } else {
             openDrawerTab("tab-instructions");
             resultBox.hidden = false;
             resultBox.textContent =
-                "❌ " + (rData.error || "Falha ao iniciar o Godot") +
+                "❌ " + (rData.error || "Failed to start Godot") +
                 (rData.build_log ? "\n\n" + rData.build_log.trim() : "");
-            showToast(rData.error || "Falha ao executar", "alert-triangle");
+            showToast(rData.error || "Failed to execute", "alert-triangle");
         }
     } catch (err) {
-        showToast("Servidor local não encontrado", "alert-triangle");
+        showToast("Local server not found", "alert-triangle");
     } finally {
         btn.disabled = false;
     }
@@ -1258,10 +1260,10 @@ async function testLevel() {
 
 async function runGame() {
     if (location.protocol === "file:") {
-        showToast("Use o servidor local para executar", "alert-triangle");
+        showToast("Use the local server to run", "alert-triangle");
         return;
     }
-    showToast("Iniciando o Godot...", "gamepad-2");
+    showToast("Starting Godot...", "gamepad-2");
     try {
         const resp = await fetch("/api/run", {
             method: "POST",
@@ -1270,12 +1272,12 @@ async function runGame() {
         });
         const data = await resp.json();
         if (data.ok) {
-            showToast("Godot iniciado!", "check");
+            showToast("Godot started!", "check");
         } else {
-            showToast(data.error || "Falha ao iniciar o Godot", "alert-triangle");
+            showToast(data.error || "Failed to start Godot", "alert-triangle");
         }
     } catch (err) {
-        showToast("Servidor local não encontrado", "alert-triangle");
+        showToast("Local server not found", "alert-triangle");
     }
 }
 
@@ -1286,17 +1288,17 @@ async function compileLevel() {
     if (location.protocol === "file:") {
         resultBox.hidden = false;
         resultBox.textContent =
-            "⚠️ Você abriu o editor via file://, que não pode compilar.\n" +
-            "Inicie o servidor local e abra pelo navegador:\n\n" +
+            "⚠️ You opened the editor via file://, which cannot compile.\n" +
+            "Start the local server and open it in the browser:\n\n" +
             "  python tools/map_editor/server.py\n" +
             "  http://localhost:8000";
-        showToast("Use o servidor local para compilar", "alert-triangle");
+        showToast("Use the local server to compile", "alert-triangle");
         return;
     }
 
     const content = document.getElementById("ascii-output").value;
     resultBox.hidden = false;
-    resultBox.textContent = "⏳ Compilando nível " + levelId + "...";
+    resultBox.textContent = "⏳ Compiling level " + levelId + "...";
     btn.disabled = true;
 
     try {
@@ -1309,27 +1311,27 @@ async function compileLevel() {
 
         if (data.ok) {
             resultBox.textContent =
-                `✅ Nível ${data.level} compilado com sucesso!\n` +
-                `Mapa:  ${data.map_file}\n` +
-                `Cena:  ${data.scene_file}\n\n` +
-                `Abra/recarregue o projeto no Godot para testar.\n\n` +
+                `✅ Level ${data.level} compiled successfully!\n` +
+                `Map:   ${data.map_file}\n` +
+                `Scene: ${data.scene_file}\n\n` +
+                `Open/reload the project in Godot to test.\n\n` +
                 (data.stdout || "").trim();
-            showToast(`Nível ${data.level} pronto para o Godot!`, "check");
+            showToast(`Level ${data.level} ready for Godot!`, "check");
         } else {
             resultBox.textContent =
-                `❌ Falha na compilação.\n\n` +
+                `❌ Compilation failed.\n\n` +
                 ((data.stderr || data.error || "").trim()) +
                 (data.stdout ? "\n\n" + data.stdout.trim() : "");
-            showToast("Falha na compilação", "alert-triangle");
+            showToast("Compilation failed", "alert-triangle");
         }
     } catch (err) {
         resultBox.textContent =
-            "⚠️ Não foi possível falar com o servidor local.\n" +
-            "Verifique se ele está rodando:\n\n" +
+            "⚠️ Could not connect to the local server.\n" +
+            "Make sure it is running:\n\n" +
             "  python tools/map_editor/server.py\n" +
             "  http://localhost:8000\n\n" +
-            "Detalhe: " + err.message;
-        showToast("Servidor local não encontrado", "alert-triangle");
+            "Detail: " + err.message;
+        showToast("Local server not found", "alert-triangle");
     } finally {
         btn.disabled = false;
     }
@@ -1358,7 +1360,7 @@ function downloadFile(format) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        showToast(`Download de '${filename}' iniciado!`, "download");
+        showToast(`Download of '${filename}' started!`, "download");
     }
 }
 

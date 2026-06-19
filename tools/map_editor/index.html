@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paçoca 2.5D - Editor Visual de Mapas</title>
+    <title>Paçoca 2.5D - Visual Map Editor</title>
     <!-- Google Fonts: Outfit (modern sans) and JetBrains Mono (coding font) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,47 +22,47 @@
             </div>
 
             <div class="topbar-field">
-                <label for="level-id">Nível</label>
-                <input type="text" id="level-id" value="04" maxlength="3" class="inp inp-id" title="ID do nível">
-                <input type="text" id="level-name" value="Ruínas Celestes" class="inp inp-name" title="Nome do nível" placeholder="Nome do nível">
+                <label for="level-id">Level</label>
+                <input type="text" id="level-id" value="04" maxlength="3" class="inp inp-id" title="Level ID">
+                <input type="text" id="level-name" value="Sky Ruins" class="inp inp-name" title="Level Name" placeholder="Level Name">
             </div>
 
             <div class="topbar-field">
                 <label>Grid</label>
-                <input type="number" id="grid-width" value="100" min="10" max="1000" class="inp inp-num" title="Largura (colunas)">
+                <input type="number" id="grid-width" value="100" min="10" max="1000" class="inp inp-num" title="Width (columns)">
                 <span class="x">×</span>
-                <input type="number" id="grid-height" value="15" min="5" max="100" class="inp inp-num" title="Altura (linhas)">
-                <button class="btn btn-secondary btn-sm" onclick="rebuildGrid()" title="Aplicar dimensões">Aplicar</button>
+                <input type="number" id="grid-height" value="15" min="5" max="100" class="inp inp-num" title="Height (rows)">
+                <button class="btn btn-secondary btn-sm" onclick="rebuildGrid()" title="Apply dimensions">Apply</button>
             </div>
 
             <div class="topbar-spacer"></div>
 
             <div class="topbar-field view-controls">
-                <button class="icon-btn" onclick="adjustZoom(-0.1)" title="Zoom -"><i data-lucide="zoom-out"></i></button>
+                <button class="icon-btn" onclick="adjustZoom(-0.1)" title="Zoom Out"><i data-lucide="zoom-out"></i></button>
                 <span class="zoom-level" id="zoom-label">100%</span>
-                <button class="icon-btn" onclick="adjustZoom(0.1)" title="Zoom +"><i data-lucide="zoom-in"></i></button>
-                <button class="icon-btn" onclick="adjustZoom(0, true)" title="Resetar zoom"><i data-lucide="maximize-2"></i></button>
-                <button class="icon-btn active" id="btn-toggle-grid" onclick="toggleGridlines()" title="Alternar linhas do grid"><i data-lucide="grid-3x3"></i></button>
+                <button class="icon-btn" onclick="adjustZoom(0.1)" title="Zoom In"><i data-lucide="zoom-in"></i></button>
+                <button class="icon-btn" onclick="adjustZoom(0, true)" title="Reset Zoom"><i data-lucide="maximize-2"></i></button>
+                <button class="icon-btn active" id="btn-toggle-grid" onclick="toggleGridlines()" title="Toggle gridlines"><i data-lucide="grid-3x3"></i></button>
             </div>
 
             <div class="topbar-actions">
-                <button class="icon-btn" onclick="openSettings()" title="Configurar caminho do Godot">
+                <button class="icon-btn" onclick="openSettings()" title="Configure Godot path">
                     <i data-lucide="settings"></i>
                 </button>
-                <button class="btn btn-secondary" onclick="openMaps()" title="Salvar, abrir e gerenciar mapas">
-                    <i data-lucide="folder"></i> Mapas
+                <button class="btn btn-secondary" onclick="openMaps()" title="Save, open and manage maps">
+                    <i data-lucide="folder"></i> Maps
                 </button>
-                <button class="btn btn-secondary" id="btn-toggle-output" onclick="toggleOutput()" title="Exportar código (ASCII / JSON)">
-                    <i data-lucide="code-2"></i> Código
+                <button class="btn btn-secondary" id="btn-toggle-output" onclick="toggleOutput()" title="Export code (ASCII / JSON)">
+                    <i data-lucide="code-2"></i> Code
                 </button>
-                <button class="btn btn-secondary" onclick="openDrawerTab('tab-instructions')" title="Compilar para o Godot">
-                    <i data-lucide="hammer"></i> Compilar
+                <button class="btn btn-secondary" onclick="openDrawerTab('tab-instructions')" title="Compile for Godot">
+                    <i data-lucide="hammer"></i> Compile
                 </button>
-                <button class="btn btn-primary" id="btn-test-level" onclick="testLevel()" title="Compilar a fase atual e abrir direto nela no Godot (F5)">
-                    <i data-lucide="flask-conical"></i> Testar fase
+                <button class="btn btn-primary" id="btn-test-level" onclick="testLevel()" title="Compile the current level and open directly in Godot (F5)">
+                    <i data-lucide="flask-conical"></i> Test Level
                 </button>
-                <button class="btn btn-run" onclick="runGame()" title="Executar o jogo a partir do menu">
-                    <i data-lucide="gamepad-2"></i> Executar
+                <button class="btn btn-run" onclick="runGame()" title="Run game starting from menu">
+                    <i data-lucide="gamepad-2"></i> Run
                 </button>
             </div>
         </header>
@@ -72,13 +72,13 @@
             <!-- LEFT DOCK: tools + palette -->
             <aside class="dock">
                 <div class="dock-tools">
-                    <button class="tool-btn active" id="tool-paint" onclick="setToolMode('paint')" title="Pintar (B)">
+                    <button class="tool-btn active" id="tool-paint" onclick="setToolMode('paint')" title="Paint (B)">
                         <i data-lucide="pencil"></i>
                     </button>
-                    <button class="tool-btn" id="tool-erase" onclick="setToolMode('erase')" title="Borracha (E)">
+                    <button class="tool-btn" id="tool-erase" onclick="setToolMode('erase')" title="Eraser (E)">
                         <i data-lucide="eraser"></i>
                     </button>
-                    <button class="tool-btn tool-danger" onclick="clearGrid()" title="Limpar tudo">
+                    <button class="tool-btn tool-danger" onclick="clearGrid()" title="Clear all">
                         <i data-lucide="trash-2"></i>
                     </button>
                 </div>
@@ -102,7 +102,7 @@
                     <span class="coord-info" id="coord-display">X: 0, Y: 0 | Real: 0.0m, 0.0m</span>
                     <div class="quick-nav">
                         <i data-lucide="move-horizontal"></i>
-                        <input type="range" id="scroll-slider" min="0" max="100" value="0" title="Navegação horizontal">
+                        <input type="range" id="scroll-slider" min="0" max="100" value="0" title="Horizontal navigation">
                     </div>
                 </div>
             </section>
@@ -110,14 +110,14 @@
             <!-- RIGHT DRAWER (overlay): exports / imports / compile -->
             <aside class="drawer" id="drawer">
                 <div class="drawer-head">
-                    <span class="drawer-title">Código & Compilação</span>
-                    <button class="icon-btn" onclick="toggleOutput()" title="Fechar (Esc)"><i data-lucide="x"></i></button>
+                    <span class="drawer-title">Code & Compile</span>
+                    <button class="icon-btn" onclick="toggleOutput()" title="Close (Esc)"><i data-lucide="x"></i></button>
                 </div>
                 <div class="tabs-header">
                     <button class="tab-btn active" onclick="switchTab('tab-ascii')">ASCII</button>
                     <button class="tab-btn" onclick="switchTab('tab-json')">JSON</button>
-                    <button class="tab-btn" onclick="switchTab('tab-import')">Importar</button>
-                    <button class="tab-btn" onclick="switchTab('tab-instructions')">Compilar</button>
+                    <button class="tab-btn" onclick="switchTab('tab-import')">Import</button>
+                    <button class="tab-btn" onclick="switchTab('tab-instructions')">Compile</button>
                 </div>
 
                 <div class="tabs-content">
@@ -125,10 +125,10 @@
                     <div class="tab-panel active" id="tab-ascii">
                         <div class="tab-actions">
                             <button class="btn btn-sm btn-secondary" onclick="copyToClipboard('ascii-output')">
-                                <i data-lucide="copy"></i> Copiar
+                                <i data-lucide="copy"></i> Copy
                             </button>
                             <button class="btn btn-sm btn-primary" onclick="downloadFile('txt')">
-                                <i data-lucide="download"></i> Baixar .txt
+                                <i data-lucide="download"></i> Download .txt
                             </button>
                         </div>
                         <textarea id="ascii-output" readonly class="code-view" spellcheck="false"></textarea>
@@ -138,10 +138,10 @@
                     <div class="tab-panel" id="tab-json">
                         <div class="tab-actions">
                             <button class="btn btn-sm btn-secondary" onclick="copyToClipboard('json-output')">
-                                <i data-lucide="copy"></i> Copiar
+                                <i data-lucide="copy"></i> Copy
                             </button>
                             <button class="btn btn-sm btn-primary" onclick="downloadFile('json')">
-                                <i data-lucide="download"></i> Baixar .json
+                                <i data-lucide="download"></i> Download .json
                             </button>
                         </div>
                         <textarea id="json-output" readonly class="code-view" spellcheck="false"></textarea>
@@ -149,11 +149,11 @@
 
                     <!-- Import Tab -->
                     <div class="tab-panel" id="tab-import">
-                        <p class="tab-note">Cole um mapa em Grid ASCII (com cabeçalhos) ou JSON para carregá-lo no editor.</p>
-                        <textarea id="import-input" class="code-view input-view" placeholder="Cole aqui seu level_XX_map.txt ou .json..." spellcheck="false"></textarea>
+                        <p class="tab-note">Paste an ASCII Grid map (with headers) or JSON to load it into the editor.</p>
+                        <textarea id="import-input" class="code-view input-view" placeholder="Paste your level_XX_map.txt or .json here..." spellcheck="false"></textarea>
                         <div class="tab-actions justify-end">
                             <button class="btn btn-primary" onclick="importMap()">
-                                <i data-lucide="upload"></i> Carregar no Editor
+                                <i data-lucide="upload"></i> Load in Editor
                             </button>
                         </div>
                     </div>
@@ -161,41 +161,41 @@
                     <!-- Compile Tab -->
                     <div class="tab-panel" id="tab-instructions">
                         <div class="instructions-guide">
-                            <h4>Compilar este nível para o Godot</h4>
+                            <h4>Compile this level for Godot</h4>
 
                             <div class="live-compile-card">
-                                <p>Com o servidor local rodando, compile direto daqui: grava o mapa no projeto e gera o <code>.tscn</code> pronto para abrir no Godot.</p>
+                                <p>With the local server running, compile directly from here: saves the map to the project and generates the <code>.tscn</code> ready to open in Godot.</p>
                                 <button class="btn btn-primary" id="btn-compile-live" onclick="compileLevel()">
-                                    <i data-lucide="play"></i> Compilar agora
+                                    <i data-lucide="play"></i> Compile now
                                 </button>
                                 <pre id="compile-result" class="compile-result" hidden></pre>
                                 <p class="tab-note">
-                                    Requer o servidor local: <code>python tools/map_editor/server.py</code> e abrir
-                                    <code>http://localhost:8000</code> (não funciona via <code>file://</code>).
+                                    Requires the local server: <code>python tools/map_editor/server.py</code> and opening
+                                    <code>http://localhost:8000</code> (does not work via <code>file://</code>).
                                 </p>
                             </div>
 
                             <details class="manual-steps">
-                                <summary>Compilar manualmente (sem servidor)</summary>
+                                <summary>Compile manually (without server)</summary>
                                 <ol>
-                                    <li>Baixe o arquivo como <code class="highlight">level_<span class="dynamic-level-id">04</span>_map.txt</code>.</li>
-                                    <li>Coloque-o em <code>tools/map_editor/levels/</code>.</li>
-                                    <li>No terminal, a partir da pasta <code>src/</code>, execute:</li>
+                                    <li>Download the file as <code class="highlight">level_<span class="dynamic-level-id">04</span>_map.txt</code>.</li>
+                                    <li>Place it in <code>tools/map_editor/levels/</code>.</li>
+                                    <li>In the terminal, from the <code>src/</code> folder, run:</li>
                                 </ol>
                                 <div class="command-box">
                                     <code id="compile-command">python scripts/convert_map.py --input scripts/levels/level_04_map.txt --level 04</code>
-                                    <button class="btn-copy-icon" onclick="copyCommand()" title="Copiar Comando"><i data-lucide="copy"></i></button>
+                                    <button class="btn-copy-icon" onclick="copyCommand()" title="Copy Command"><i data-lucide="copy"></i></button>
                                 </div>
                             </details>
 
                             <div class="metrics-card">
-                                <h5>Métricas Importantes (Platformer Kit)</h5>
+                                <h5>Important Metrics (Platformer Kit)</h5>
                                 <ul>
-                                    <li><strong>Grade X (Largura)</strong>: Cada bloco <code>#</code> ou rampa <code>/</code> mede <strong>2m</strong>.</li>
-                                    <li><strong>Grade Y (Altura)</strong>: Cada linha mede <strong>3m</strong> (gravado como <code>ystep: 3.0</code> no arquivo).</li>
-                                    <li><strong>Salto Médio</strong>: 4m horizontalmente (parado), até 15m (com velocidade máxima).</li>
-                                    <li><strong>Molas</strong>: Verticais lançam a 22m de altura. Diagonais para cruzamento rápido.</li>
-                                    <li><strong>Queda Fatal</strong>: Evite plataformas em Y &lt; -15m.</li>
+                                    <li><strong>X Grid (Width)</strong>: Each block <code>#</code> or ramp <code>/</code> measures <strong>2m</strong>.</li>
+                                    <li><strong>Y Grid (Height)</strong>: Each row measures <strong>3m</strong> (saved as <code>ystep: 3.0</code> in the file).</li>
+                                    <li><strong>Average Jump</strong>: 4m horizontally (standing), up to 15m (at maximum speed).</li>
+                                    <li><strong>Springs</strong>: Vertical ones launch up to 22m high. Diagonal ones for fast crossings.</li>
+                                    <li><strong>Fatal Fall</strong>: Avoid platforms at Y &lt; -15m.</li>
                                 </ul>
                             </div>
                         </div>
@@ -209,26 +209,26 @@
         <div class="modal-overlay" id="settings-modal" hidden onclick="onSettingsBackdrop(event)">
             <div class="modal">
                 <div class="modal-head">
-                    <span><i data-lucide="settings"></i> Configuração do Godot</span>
-                    <button class="icon-btn" onclick="closeSettings()" title="Fechar (Esc)"><i data-lucide="x"></i></button>
+                    <span><i data-lucide="settings"></i> Godot Configuration</span>
+                    <button class="icon-btn" onclick="closeSettings()" title="Close (Esc)"><i data-lucide="x"></i></button>
                 </div>
                 <div class="modal-body">
-                    <label for="godot-path">Caminho do executável do Godot</label>
+                    <label for="godot-path">Path to the Godot executable</label>
                     <input type="text" id="godot-path" class="inp" spellcheck="false"
-                           placeholder="C:\\caminho\\para\\Godot_mono.exe">
-                    <p class="settings-status" id="godot-status">Carregando…</p>
+                           placeholder="C:\\path\\to\\Godot_mono.exe">
+                    <p class="settings-status" id="godot-status">Loading...</p>
                     <p class="tab-note">
-                        Usado pelos botões <strong>Testar fase</strong> e <strong>Executar</strong>.
-                        Se o Godot estiver no PATH, é detectado e preenchido automaticamente —
-                        informe o caminho manualmente apenas se não estiver.
+                        Used by the <strong>Test Level</strong> and <strong>Run</strong> buttons.
+                        If Godot is in your PATH, it is automatically detected and filled —
+                        provide the path manually only if it is not.
                     </p>
                 </div>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="detectGodot()" title="Procurar o Godot no PATH do sistema">
-                        <i data-lucide="search"></i> Detectar no PATH
+                    <button class="btn btn-secondary" onclick="detectGodot()" title="Search Godot in the system PATH">
+                        <i data-lucide="search"></i> Detect in PATH
                     </button>
                     <button class="btn btn-primary" onclick="saveGodotPath()">
-                        <i data-lucide="check"></i> Salvar
+                        <i data-lucide="check"></i> Save
                     </button>
                 </div>
             </div>
@@ -238,18 +238,18 @@
         <div class="modal-overlay" id="maps-modal" hidden onclick="onMapsBackdrop(event)">
             <div class="modal modal-lg">
                 <div class="modal-head">
-                    <span><i data-lucide="folder"></i> Meus mapas</span>
-                    <button class="icon-btn" onclick="closeMaps()" title="Fechar (Esc)"><i data-lucide="x"></i></button>
+                    <span><i data-lucide="folder"></i> My maps</span>
+                    <button class="icon-btn" onclick="closeMaps()" title="Close (Esc)"><i data-lucide="x"></i></button>
                 </div>
                 <div class="modal-body">
                     <div class="maps-savebar">
                         <button class="btn btn-primary" onclick="saveCurrentMap()">
-                            <i data-lucide="save"></i> Salvar mapa atual
+                            <i data-lucide="save"></i> Save current map
                         </button>
                         <span class="tab-note" id="maps-savehint"></span>
                     </div>
                     <div class="maps-list" id="maps-list">
-                        <p class="tab-note">Carregando…</p>
+                        <p class="tab-note">Loading...</p>
                     </div>
                 </div>
             </div>

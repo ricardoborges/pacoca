@@ -2,7 +2,7 @@
 """Local dev server for the Paçoca Map Editor.
 
 Serves the static visual editor AND exposes a small build endpoint so the
-"Compilar agora" button can run the level pipeline directly:
+"Compile now" button can run the level pipeline directly:
 
     POST /api/compile  { "level": "04", "format": "txt"|"json", "content": "<map>" }
 
@@ -40,7 +40,7 @@ CONVERTER = os.path.join(SCRIPTS_DIR, "convert_map.py")
 # project (convert_map.py resolves those output paths from its own location).
 MAPS_DIR = os.path.join(EDITOR_DIR, "levels")
 
-# Godot binary used by the "Testar fase" / "Executar" buttons.
+# Godot binary used by the "Test Level" / "Run" buttons.
 # Resolved at request time (see resolve_godot) so changes apply without a restart.
 CONFIG_PATH = os.path.join(EDITOR_DIR, "editor_config.json")
 DEFAULT_GODOT = r"D:\dev\Godot_v4.6.3-stable_mono_win64\Godot_v4.6.3-stable_mono_win64.exe"
@@ -195,7 +195,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif self.path == "/api/maps/delete":
             self._handle_delete_map()
         else:
-            self._json(404, {"ok": False, "error": "rota não encontrada"})
+            self._json(404, {"ok": False, "error": "route not found"})
 
     # -- saved maps endpoints ----------------------------------------------- #
     def _read_json_body(self) -> dict:
@@ -212,11 +212,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         level = sanitize_level(qs.get("level", [""])[0])
         fmt = qs.get("format", ["txt"])[0]
         if not level:
-            self._json(400, {"ok": False, "error": "nível inválido"})
+            self._json(400, {"ok": False, "error": "invalid level"})
             return
         path = resolve_map_path(level, fmt, for_save=False)
         if not path:
-            self._json(404, {"ok": False, "error": "mapa não encontrado"})
+            self._json(404, {"ok": False, "error": "map not found"})
             return
         with open(path, "r", encoding="utf-8") as f:
             content = f.read()
@@ -232,17 +232,17 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             payload = self._read_json_body()
         except (ValueError, json.JSONDecodeError):
-            self._json(400, {"ok": False, "error": "corpo JSON inválido"})
+            self._json(400, {"ok": False, "error": "invalid JSON body"})
             return
 
         level = sanitize_level(payload.get("level", ""))
         fmt = payload.get("format", "txt")
         content = payload.get("content", "")
         if not level:
-            self._json(400, {"ok": False, "error": "id de nível inválido"})
+            self._json(400, {"ok": False, "error": "invalid level ID"})
             return
         if not str(content).strip():
-            self._json(400, {"ok": False, "error": "mapa vazio"})
+            self._json(400, {"ok": False, "error": "empty map"})
             return
 
         os.makedirs(MAPS_DIR, exist_ok=True)
@@ -251,7 +251,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             with open(path, "w", encoding="utf-8", newline="\n") as f:
                 f.write(content)
         except OSError as exc:
-            self._json(500, {"ok": False, "error": f"não foi possível salvar: {exc}"})
+            self._json(500, {"ok": False, "error": f"could not save: {exc}"})
             return
 
         self._json(200, {
@@ -265,22 +265,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             payload = self._read_json_body()
         except (ValueError, json.JSONDecodeError):
-            self._json(400, {"ok": False, "error": "corpo JSON inválido"})
+            self._json(400, {"ok": False, "error": "invalid JSON body"})
             return
 
         level = sanitize_level(payload.get("level", ""))
         fmt = payload.get("format", "txt")
         if not level:
-            self._json(400, {"ok": False, "error": "nível inválido"})
+            self._json(400, {"ok": False, "error": "invalid level"})
             return
         path = resolve_map_path(level, fmt, for_save=False)
         if not path:
-            self._json(404, {"ok": False, "error": "mapa não encontrado"})
+            self._json(404, {"ok": False, "error": "map not found"})
             return
         try:
             os.remove(path)
         except OSError as exc:
-            self._json(500, {"ok": False, "error": f"não foi possível excluir: {exc}"})
+            self._json(500, {"ok": False, "error": f"could not delete: {exc}"})
             return
         self._json(200, {"ok": True, "level": level})
 
@@ -302,7 +302,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", 0))
             payload = json.loads(self.rfile.read(length) or b"{}") if length else {}
         except (ValueError, json.JSONDecodeError):
-            self._json(400, {"ok": False, "error": "corpo JSON inválido"})
+            self._json(400, {"ok": False, "error": "invalid JSON body"})
             return
 
         cfg = load_config()
@@ -315,7 +315,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             save_config(cfg)
         except OSError as exc:
-            self._json(500, {"ok": False, "error": f"não foi possível salvar: {exc}"})
+            self._json(500, {"ok": False, "error": f"could not save: {exc}"})
             return
 
         self._json(200, self._config_payload())
@@ -336,7 +336,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if not godot_bin or not os.path.exists(godot_bin):
             self._json(500, {
                 "ok": False,
-                "error": f"Godot não encontrado em '{godot_bin}'. Configure o caminho no editor (engrenagem) ou defina GODOT_BIN.",
+                "error": f"Godot not found at '{godot_bin}'. Configure the path in the editor (gear icon) or set GODOT_BIN.",
             })
             return
 
@@ -344,7 +344,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if level:
             safe_level = "".join(ch for ch in str(level) if ch.isalnum())
             if not safe_level:
-                self._json(400, {"ok": False, "error": "id de nível inválido"})
+                self._json(400, {"ok": False, "error": "invalid level ID"})
                 return
             if len(safe_level) < 2:
                 safe_level = safe_level.zfill(2)
@@ -353,9 +353,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             # Never blocks the run: a stale-but-working assembly is fine.
             status, log = self._dotnet_build()
             if status == "fail":
-                build_warning = "dotnet build falhou (assembly pode estar travado pelo editor); usando build existente."
+                build_warning = "dotnet build failed (assembly may be locked by the editor); using existing build."
             elif status == "skip":
-                build_warning = "dotnet não encontrado: se a fase não abrir, compile o C# uma vez no editor Godot."
+                build_warning = "dotnet not found: if the level does not open, compile C# once in the Godot editor."
 
             # Run main.tscn directly and pass the level as a user arg (after --).
             cmd = [godot_bin, "--path", GODOT_ROOT, "res://scenes/main.tscn", "--", f"--level={safe_level}"]
@@ -372,7 +372,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             subprocess.Popen(cmd, **kwargs)
         except Exception as exc:  # pragma: no cover - environment failure
-            self._json(500, {"ok": False, "error": f"falha ao iniciar o Godot: {exc}"})
+            self._json(500, {"ok": False, "error": f"failed to launch Godot: {exc}"})
             return
 
         resp = {"ok": True, "godot": godot_bin, "path": GODOT_ROOT}
@@ -404,7 +404,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", 0))
             payload = json.loads(self.rfile.read(length) or b"{}")
         except (ValueError, json.JSONDecodeError):
-            self._json(400, {"ok": False, "error": "corpo JSON inválido"})
+            self._json(400, {"ok": False, "error": "invalid JSON body"})
             return
 
         level = str(payload.get("level", "")).strip()
@@ -414,13 +414,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Sanitize the level id so it can only ever be a filename-safe token.
         safe_level = "".join(ch for ch in level if ch.isalnum())
         if not safe_level:
-            self._json(400, {"ok": False, "error": "id de nível inválido"})
+            self._json(400, {"ok": False, "error": "invalid level ID"})
             return
         if len(safe_level) < 2:
             safe_level = safe_level.zfill(2)
 
         if not str(content).strip():
-            self._json(400, {"ok": False, "error": "mapa vazio"})
+            self._json(400, {"ok": False, "error": "empty map"})
             return
 
         ext = "json" if fmt == "json" else "txt"
@@ -432,14 +432,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             f.write(content)
 
         if not os.path.exists(CONVERTER):
-            self._json(500, {"ok": False, "error": f"conversor não encontrado em {CONVERTER}"})
+            self._json(500, {"ok": False, "error": f"converter not found at {CONVERTER}"})
             return
 
         cmd = [sys.executable, CONVERTER, "--input", map_path, "--level", safe_level]
         try:
             proc = subprocess.run(cmd, cwd=GODOT_ROOT, capture_output=True, text=True)
         except Exception as exc:  # pragma: no cover - environment failure
-            self._json(500, {"ok": False, "error": f"falha ao executar o conversor: {exc}"})
+            self._json(500, {"ok": False, "error": f"failed to run converter: {exc}"})
             return
 
         scene_rel = f"src/scenes/levels/level_{safe_level}.tscn"
@@ -473,16 +473,16 @@ def main() -> int:
     httpd = http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler)
     print("Paçoca Map Editor")
     print(f"  Editor:    http://127.0.0.1:{port}")
-    print(f"  Servindo:  {EDITOR_DIR}")
-    print(f"  Compila p/: {GODOT_ROOT}")
+    print(f"  Serving:   {EDITOR_DIR}")
+    print(f"  Compile to: {GODOT_ROOT}")
     godot_bin, godot_src = resolve_godot()
-    godot_ok = "ok" if godot_bin and os.path.exists(godot_bin) else "NÃO ENCONTRADO — configure no editor"
+    godot_ok = "ok" if godot_bin and os.path.exists(godot_bin) else "NOT FOUND — configure in editor"
     print(f"  Godot:     {godot_bin} [{godot_src}] ({godot_ok})")
-    print("  Ctrl+C para encerrar.")
+    print("  Ctrl+C to terminate.")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nEncerrando.")
+        print("\nTerminating.")
     finally:
         httpd.server_close()
     return 0

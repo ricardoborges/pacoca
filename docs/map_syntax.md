@@ -1,114 +1,114 @@
-# Guia de Desenho de Mapas — Paçoca 2.5D
+# Map Drawing Guide — Paçoca 2.5D
 
-Este documento descreve como desenhar fases do Paçoca em **Texto (Grid ASCII)** ou **JSON**, como o editor visual e o conversor funcionam, e como transformar um mapa em um nível jogável (`.tscn`) do Godot.
+This document describes how to draw Paçoca stages in **Text (ASCII Grid)** or **JSON**, how the visual editor and converter work, and how to turn a map into a playable Godot level (`.tscn`).
 
-> **Fonte da verdade:** o comportamento descrito aqui reflete `src/scripts/convert_map.py` (parser) e `src/scripts/generate_level.py` (gerador de cena). Se a doc e o código divergirem, o código vence — veja a seção [Inconsistências conhecidas](#inconsistências-conhecidas).
-
----
-
-## Visão geral do pipeline
-
-```
-mapa .txt / .json
-      │
-      ▼
-src/scripts/convert_map.py        ← faz o parse e gera os dados do nível
-      │   ├─ cria src/scripts/levels/level_XX.py     (módulo de dados: build())
-      │   └─ cria src/scenes/levels/level_XX.tscn    (cena base, só se não existir)
-      ▼
-src/scripts/generate_level.py     ← compila a geometria/objetos na .tscn
-      │
-      ▼
-src/scenes/levels/level_XX.tscn   ← nível jogável, abrir no Godot
-```
-
-Três formas de produzir o mapa de entrada:
-
-1. **Editor visual** (`tools/map_editor/index.html`) — desenha clicando, exporta `.txt` ou `.json`.
-2. **Grid ASCII** escrito à mão em qualquer editor de texto.
-3. **JSON estruturado** — para coordenadas decimais exatas e parâmetros customizados.
+> **Source of Truth:** The behavior described here reflects `src/scripts/convert_map.py` (parser) and `src/scripts/generate_level.py` (scene generator). If this documentation and the code diverge, the code wins — see the [Known Inconsistencies](#known-inconsistencies) section.
 
 ---
 
-## Sistema de coordenadas
+## Pipeline Overview
 
-O mapa é uma vista lateral (plano XY). O jogo é 3D renderizado, mas a física vive no plano XY (o Z é fixado em 0).
+```
+map .txt / .json
+      │
+      ▼
+src/scripts/convert_map.py        ← parses and generates level data
+      │   ├─ creates src/scripts/levels/level_XX.py     (data module: build())
+      │   └─ creates src/scenes/levels/level_XX.tscn    (base scene, only if missing)
+      ▼
+src/scripts/generate_level.py     ← compiles geometry/objects into .tscn
+      │
+      ▼
+src/scenes/levels/level_XX.tscn   ← playable level, open in Godot
+```
 
-| Eixo | Significado | Conversão a partir do grid |
+Three ways to produce the input map:
+
+1. **Visual Editor** (`tools/map_editor/index.html`) — draw by clicking, export `.txt` or `.json`.
+2. **ASCII Grid** written by hand in any text editor.
+3. **Structured JSON** — for exact decimal coordinates and custom parameters.
+
+---
+
+## Coordinate System
+
+The map is a side view (XY plane). The game is rendered in 3D, but physics live in the XY plane (Z is locked to 0).
+
+| Axis | Meaning | Conversion from Grid |
 | :--- | :--- | :--- |
-| **X** (horizontal) | Cada **coluna** vale **2,0 m**. | `x = coluna * 2.0` |
-| **Y** (vertical) | Cada **linha** vale `ystep` metros (ver abaixo). | `y = linha * ystep` |
+| **X** (horizontal) | Each **column** equals **2.0 m**. | `x = column * 2.0` |
+| **Y** (vertical) | Each **row** equals `ystep` meters (see below). | `y = row * ystep` |
 
-- A **coluna 0** (extrema esquerda) é o início da fase.
-- A **última linha não-vazia** do bloco `[grid]` é o chão mais baixo, `Y = 0`. Linhas acima aumentam a altura.
-- O conversor **mescla** sequências horizontais de `#` em um único colisor de física, evitando que o jogador prenda nas emendas.
+- **Column 0** (far left) is the start of the level.
+- The **last non-empty row** of the `[grid]` block is the lowest floor, `Y = 0`. Rows above increase the height.
+- The converter **merges** horizontal sequences of `#` into a single physics collider to prevent the player from getting stuck on seams.
 
-### O parâmetro `ystep` (leia com atenção)
+### The `ystep` Parameter (Read Carefully)
 
-`ystep` define quantos metros vale cada linha vertical do grid. Ele é lido do cabeçalho do arquivo:
+`ystep` defines how many meters each vertical row of the grid is worth. It is read from the file header:
 
 ```text
 ystep: 3.0
 ```
 
-- **A altura padrão é `3.0` m por linha.** Tanto o editor visual quanto o default do `convert_map.py` usam esse valor, então todo nível novo nasce com a mesma escala vertical — você não precisa pensar nisso.
-- O editor grava `ystep: 3.0` automaticamente no `.txt` exportado, e o `.json` carrega coordenadas absolutas equivalentes.
-- O cabeçalho `ystep:` existe só como escape para casos legados ou experimentais (ex.: `level_01.txt` foi feito com `ystep: 1.0`). **Para padronizar, não defina `ystep` ao criar fases novas** — deixe o default de 3.0 valer.
+- **The default height is `3.0` m per row.** Both the visual editor and `convert_map.py`'s default use this value, so every new level starts with the same vertical scale — you don't need to worry about it.
+- The editor automatically writes `ystep: 3.0` in the exported `.txt`, and the `.json` loads equivalent absolute coordinates.
+- The `ystep:` header exists only as a fallback for legacy or experimental cases (e.g., `level_01.txt` was made with `ystep: 1.0`). **To standardize, do not define `ystep` when creating new stages** — let the default of 3.0 apply.
 
 ---
 
-## Legenda dos caracteres
+## Character Legend
 
-| Caractere | Elemento | Cena / Comportamento |
+| Character | Element | Scene / Behavior |
 | :--- | :--- | :--- |
-| ` ` (espaço) ou `.` | **Ar / Vazio** | Espaço vazio |
-| `#` | **Plataforma de grama** | Bloco sólido (`CSGBox3D`) com base de pedra |
-| `/` | **Rampa subindo** | Rampa diagonal para a direita (`CSGPolygon3D`) |
-| `\` | **Rampa descendo** | Rampa diagonal para a esquerda (`CSGPolygon3D`) |
-| `o` | **Anel (ring)** | Colecionável (`ring.tscn`) |
-| `V` | **Mola vertical** | Lança o jogador para cima (`spring.tscn`, força 22) |
-| `F` | **Mola diagonal** | Lança para frente e cima (`spring.tscn`, força 25) |
-| `D` ou `>` | **Acelerador (dash pad)** | Acelera o jogador para frente (`dash_pad.tscn`) |
-| `E` | **Inimigo comum** | Robô patrulheiro (`enemy.tscn`, velocidade 3.0) |
-| `C` | **Inimigo cacto** | Cacto patrulheiro (`cactus_enemy.tscn`, velocidade 1.25) |
-| `S` | **Espinhos** | Fileira de espinhos que causa dano (`spikes.tscn`) |
-| `P` | **Spawn do player** | Posição inicial do jogador (`Marker3D` SpawnPoint) |
-| `G` | **Moeda de fim de fase** | Moeda gigante giratória que finaliza o nível (`level_finish.tscn`) |
+| ` ` (space) or `.` | **Air / Empty** | Empty space |
+| `#` | **Grass Platform** | Solid block (`CSGBox3D`) with a stone base |
+| `/` | **Ramp Up** | Diagonal ramp rising to the right (`CSGPolygon3D`) |
+| `\` | **Ramp Down** | Diagonal ramp falling to the right (`CSGPolygon3D`) |
+| `o` | **Ring** | Collectible coin (`ring.tscn`) |
+| `V` | **Vertical Spring** | Launches the player upward (`spring.tscn`, force 22) |
+| `F` | **Diagonal Spring** | Launches forward and up (`spring.tscn`, force 25) |
+| `D` or `>` | **Booster (Dash Pad)** | Accelerates the player forward (`dash_pad.tscn`) |
+| `E` | **Common Enemy** | Patrol robot (`enemy.tscn`, speed 3.0) |
+| `C` | **Cactus Enemy** | Patrol cactus (`cactus_enemy.tscn`, speed 1.25) |
+| `S` | **Spikes** | Row of spikes causing damage (`spikes.tscn`) |
+| `P` | **Player Spawn** | Player starting position (`Marker3D` SpawnPoint) |
+| `G` | **Level Finish Coin** | Giant spinning coin that finishes the level (`level_finish.tscn`) |
 
-> `>` é aceito como alias de `D` apenas pelo conversor Python. O editor visual só conhece `D`.
+> `>` is accepted as an alias for `D` only by the Python converter. The visual editor only knows `D`.
 
-### Regra de altura dos objetos (importante)
+### Object Height Rule (Important)
 
-Plataformas (`#`) e rampas ocupam a própria linha em que são desenhadas. **Já os objetos (anéis, molas, inimigos, espinhos, spawn, goal) são ancorados à linha logo ABAIXO deles.** Ou seja, eles flutuam acima da superfície que estaria uma linha abaixo:
+Platforms (`#`) and ramps occupy the row they are drawn on. **However, objects (rings, springs, enemies, spikes, spawn, goal) anchor to the row immediately BELOW them.** In other words, they float above the surface that would be one row below:
 
-| Objeto | Altura final (`r` = linha, base 0) |
+| Object | Final Height (`r` = row, 0-based) |
 | :--- | :--- |
-| Anel `o` | `(r-1) * ystep + 1.2` |
-| Mola `V` / `F`, dash `D`, espinhos `S` | `(r-1) * ystep + 0.5` |
-| Inimigo `E` / `C` | `(r-1) * ystep + 1.0` |
+| Ring `o` | `(r-1) * ystep + 1.2` |
+| Spring `V` / `F`, dash `D`, spikes `S` | `(r-1) * ystep + 0.5` |
+| Enemy `E` / `C` | `(r-1) * ystep + 1.0` |
 | Spawn `P` | `(r-1) * ystep + 1.5` |
 | Goal `G` | `(r-1) * ystep + 2.0` |
 
-**Na prática:** para colocar um anel, inimigo ou spawn **em cima** de uma plataforma, desenhe-o na linha **imediatamente acima** do `#`. Veja no exemplo abaixo como `P`, `C` e `o` ficam todos na linha acima do chão.
+**In practice:** To place a ring, enemy, or spawn **on top** of a platform, draw it in the row **immediately above** the `#`. See in the example below how `P`, `C`, and `o` are all in the row above the ground.
 
-### Plataformas flutuantes vs. ancoradas
+### Floating vs. Anchored Platforms
 
-O conversor decide automaticamente a profundidade da base de pedra de cada `#`:
+The converter automatically decides the depth of each platform's (`#`) stone base:
 
-- **Ancorada (`rock_height = 4.0`)**: existe `#`, `/` ou `\` diretamente abaixo de qualquer coluna do bloco — pedra desce até o chão.
-- **Flutuante (`rock_height = 1.0`)**: nada sólido abaixo — fina laje suspensa.
+- **Anchored (`rock_height = 4.0`)**: If `#`, `/`, or `\` exists directly below any column of the block, the stone goes all the way down to the ground.
+- **Floating (`rock_height = 1.0`)**: Nothing solid below — a thin suspended ledge.
 
-No JSON você pode forçar isso com o campo `rock_height` em cada plataforma.
+In JSON, you can force this with the `rock_height` field on each platform.
 
 ---
 
-## Opção 1 — Grid ASCII
+## Option 1 — ASCII Grid
 
-Cabeçalho com pares `chave: valor`, seguido de uma seção `[grid]` com o desenho.
+A header with `key: value` pairs, followed by a `[grid]` section containing the drawing.
 
 ```text
 level: 03
-name: Ruínas Celestes
+name: Sky Ruins
 
 [grid]
 
@@ -124,28 +124,28 @@ name: Ruínas Celestes
       o   C   ####           #  ##
     oo  #    ##       C         #
    o   ##C   ##  ########       #
- oo  ##########                 #
-  P     C             C         #
-#################################
+  oo  ##########                 #
+   P     C             C         #
+ #################################
 ```
 
-### Regras do grid
+### Grid Rules
 
-- Linhas em branco no topo são preservadas (dão altura); linhas em branco no final são descartadas (a última linha com conteúdo é `Y = 0`).
-- A largura final é a da maior linha; linhas mais curtas são preenchidas com espaços à direita.
-- `#` em sequência horizontal vira um único colisor.
-- `/` formam uma cadeia diagonal subindo para a direita (coluna +1, linha +1); `\` descem para a direita (coluna +1, linha −1). Desenhe cada degrau adjacente na diagonal para que se fundam em uma rampa só.
+- Blank lines at the top are preserved (adding height); blank lines at the end are discarded (the last non-empty line is `Y = 0`).
+- The final width is that of the longest line; shorter lines are padded with spaces to the right.
+- Adjacent `#` on a horizontal line are merged into a single collider.
+- `/` forms a diagonal chain rising to the right (column +1, row +1); `\` descends to the right (column +1, row -1). Draw adjacent steps diagonally so they merge into a single ramp.
 
 ---
 
-## Opção 2 — JSON estruturado
+## Option 2 — Structured JSON
 
-Ideal para posições decimais exatas, parâmetros customizados (velocidade de inimigos, força/direção de molas) ou geração externa.
+Ideal for exact decimal coordinates, custom parameters (enemy speed, spring force/direction), or external generation.
 
 ```json
 {
   "level": "03",
-  "name": "Templo do Caos",
+  "name": "Chaos Temple",
   "spawn": [4.0, 1.5],
   "platforms": [
     { "x": 3.0, "y": 0.0, "width": 8.0 },
@@ -185,133 +185,133 @@ Ideal para posições decimais exatas, parâmetros customizados (velocidade de i
 }
 ```
 
-| Chave | Tipo | Campos |
+| Key | Type | Fields |
 | :--- | :--- | :--- |
 | `spawn` | `[x, y]` | — |
-| `platforms` | objetos | `x` (centro), `y`, `width`, `rock_height?` |
-| `ramps_up` / `ramps_down` | objetos | `x`, `y`, `width`, `height` |
+| `platforms` | objects | `x` (center), `y`, `width`, `rock_height?` |
+| `ramps_up` / `ramps_down` | objects | `x`, `y`, `width`, `height` |
 | `rings` | `[x, y]` | — |
-| `springs_vert` | objetos | `x`, `y`, `force` |
-| `springs_diag` | objetos | `x`, `y`, `force`, `dx`, `dy`, `lock` |
+| `springs_vert` | objects | `x`, `y`, `force` |
+| `springs_diag` | objects | `x`, `y`, `force`, `dx`, `dy`, `lock` |
 | `dash_pads` | `[x, y]` | — |
-| `enemies` / `cactus_enemies` | objetos | `x`, `y`, `speed` |
+| `enemies` / `cactus_enemies` | objects | `x`, `y`, `speed` |
 | `spikes` | `[x, y]` | — |
 | `goals` | `[x, y]` | — |
 
-> No JSON, `x` de plataforma é o **centro** do bloco; `width` é a largura total em metros. `rock_height` é opcional — se omitido, o conversor detecta sozinho se a plataforma flutua.
+> In JSON, platform `x` is the **center** of the block; `width` is the total width in meters. `rock_height` is optional — if omitted, the converter automatically detects whether the platform floats.
 
 ---
 
-## Compilando para o Godot
+## Compiling to Godot
 
-O conversor vive em `src/scripts/`, e os caminhos de `--input` são relativos ao diretório onde você roda o comando. **Execute a partir da raiz do projeto Godot (`src/`)**, não da raiz do repositório Git.
+The converter lives in `src/scripts/`, and `--input` paths are relative to the directory from which you run the command. **Run it from the Godot project root (`src/`)**, not the Git repository root.
 
 ```powershell
-# A partir de D:\dev\games\Paçoca\src
+# From D:\dev\games\Paçoca\src
 python scripts/convert_map.py --input scripts/levels/level_04_map.txt --level 04
 python scripts/convert_map.py --input scripts/levels/level_04_map.json --level 04
 ```
 
-O comando irá:
+This command will:
 
-1. Fazer o parse do `.txt`/`.json` em estruturas de nível.
-2. Criar `src/scenes/levels/level_04.tscn` (água, montanhas de fundo, SpawnPoint) **se ainda não existir**.
-3. Gerar `src/scripts/levels/level_04.py` (módulo de dados com `build()`).
-4. Chamar `generate_level.py`, que compila a geometria e distribui itens/inimigos na cena.
+1. Parse the `.txt`/`.json` into level structures.
+2. Create `src/scenes/levels/level_04.tscn` (water, background mountains, SpawnPoint) **if it doesn't exist yet**.
+3. Generate `src/scripts/levels/level_04.py` (data module with `build()`).
+4. Call `generate_level.py`, which compiles the geometry and distributes items/enemies in the scene.
 
-Depois, abra/recarregue o projeto no Godot 4.6 (Mono/.NET) para testar.
+Afterwards, open/reload the project in Godot 4.6 (Mono/.NET) to test.
 
-### Re-geração é idempotente
+### Re-generation is Idempotent
 
-`generate_level.py` localiza o bloco gerado pela âncora `[node name="Platform_0"` e o substitui inteiro a cada execução, faz backup `.tscn.bak` e reposiciona o SpawnPoint via `base_edits`. Pode recompilar quantas vezes quiser sem acumular nós duplicados. **Não edite à mão a parte gerada do `.tscn`** — ela é sobrescrita.
+`generate_level.py` finds the generated block by the anchor `[node name="Platform_0"` and replaces it entirely on each run, making a `.tscn.bak` backup and repositioning the SpawnPoint via `base_edits`. You can recompile as many times as you like without accumulating duplicate nodes. **Do not manually edit the generated part of `.tscn`** — it will be overwritten.
 
-### Rodar uma fase específica direto (flag `--level`)
+### Running a Specific Stage Directly (the `--level` flag)
 
-Os níveis (`level_XX.tscn`) não são jogáveis isolados: são carregados pelo `main.tscn` via `Main.cs`. Para abrir o jogo **direto em uma fase** (útil para iteração), passe o nível por linha de comando — `Main.cs` lê o argumento e sobrescreve `GameSettings.LevelToLoad`:
+Levels (`level_XX.tscn`) are not playable on their own: they are loaded by `main.tscn` via `Main.cs`. To launch the game **directly into a level** (useful for iteration), pass the level through the command line — `Main.cs` reads the argument and overrides `GameSettings.LevelToLoad`:
 
 ```powershell
-# Por id (vira res://scenes/levels/level_04.tscn)
+# By ID (resolves to res://scenes/levels/level_04.tscn)
 & "<godot>.exe" --path .\src scenes/main.tscn -- --level=04
 
-# Ou por caminho completo res://
+# Or by full res:// path
 & "<godot>.exe" --path .\src scenes/main.tscn -- --level=res://scenes/levels/level_04.tscn
 ```
 
-O `--` separa os argumentos do Godot dos argumentos do jogo; `--level=` precisa vir depois dele. Sem essa flag, o jogo carrega a fase padrão.
+The `--` separates Godot arguments from game arguments; `--level=` must come after it. Without this flag, the game loads the default level.
 
 ---
 
-## O editor visual (`tools/map_editor/`)
+## The Visual Editor (`tools/map_editor/`)
 
-App web com servidor local opcional. Para o fluxo completo (compilar/testar/executar), rode:
+A web app with an optional local server. For the complete workflow (compile/test/run), execute:
 
 ```powershell
-python tools/map_editor/server.py   # abra http://localhost:8000
+python tools/map_editor/server.py   # then open http://localhost:8000
 ```
 
-Sem o servidor (abrindo `index.html` via `file://`) o editor funciona para desenhar e exportar, mas os botões que executam processos ficam indisponíveis.
+Without the server (opening `index.html` via `file://`), the editor works for drawing and exporting, but process-executing buttons are disabled.
 
 **Interface**
-- **Dock lateral** com ferramentas (Pintar / Borracha / Limpar) e a **paleta em ícones** (tooltip no hover) com os 12 elementos.
-- **Top bar** com id/nome do nível, dimensões do grid, zoom e linhas do grid.
-- **Canvas** dominante; barra inferior com coordenadas e navegação horizontal.
-- **Drawer** (botão **Código**) com abas **ASCII**, **JSON**, **Importar** e **Compilar**.
-- Apenas **um** spawn `P` é permitido (pintar outro remove o anterior).
-- Exporta `.txt` (`level_XX_map.txt`) e `.json` (`level_XX_map.json`).
+- **Sidebar** with tools (Paint / Erase / Clear) and the **icon palette** (tooltip on hover) showing the 12 elements.
+- **Top bar** with level ID/name, grid dimensions, zoom, and gridlines.
+- **Canvas** dominant; bottom bar with coordinates and horizontal navigation.
+- **Drawer** (button **Code**) with tabs **ASCII**, **JSON**, **Import**, and **Compile**.
+- Only **one** spawn `P` is allowed (painting another removes the previous one).
+- Exports `.txt` (`level_XX_map.txt`) and `.json` (`level_XX_map.json`).
 
-**Ações (exigem o servidor local)**
-- **Compilar** — gera o `.tscn` da fase.
-- **Testar fase** (atalho **F5**) — compila a fase atual e abre o Godot **direto nela** (faz um `dotnet build` incremental antes, para a flag `--level` valer).
-- **Executar** — abre o jogo a partir do menu.
+**Actions (require the local server)**
+- **Compile** — generates the level `.tscn`.
+- **Test Level** (shortcut **F5**) — compiles the current level and opens Godot **directly in it** (performs an incremental `dotnet build` first so the `--level` flag works).
+- **Run** — opens the game from the menu.
 
-**Atalhos de teclado**
-- **B** = pintar · **E** = borracha · **F5** = testar fase · **Esc** = fechar o drawer.
+**Keyboard Shortcuts**
+- **B** = paint · **E** = erase · **F5** = test stage · **Esc** = close the drawer.
 
-> Configuração do Godot: o servidor usa a variável de ambiente `GODOT_BIN` (com um caminho padrão). Ex.: `GODOT_BIN="C:\...\Godot.exe" python tools/map_editor/server.py`.
+> Godot Configuration: The server uses the `GODOT_BIN` environment variable (with a default path). E.g.: `GODOT_BIN="C:\...\Godot.exe" python tools/map_editor/server.py`.
 
-> O editor usa `Y_STEP = 3.0` internamente para gerar tanto o ASCII (gravando `ystep: 3.0` no cabeçalho) quanto o JSON (coordenadas absolutas).
+> The editor uses `Y_STEP = 3.0` internally to generate both ASCII (writing `ystep: 3.0` in the header) and JSON (absolute coordinates).
 
 ---
 
-## Métricas de design (Platformer Kit)
+## Design Metrics (Platformer Kit)
 
-- **Bloco / rampa:** 2 m de largura por coluna.
-- **Linha do grid:** 3 m de altura (`ystep` padrão).
-- **Salto:** ~4 m parado, até ~15 m em velocidade máxima.
-- **Mola vertical:** lança ~22 m de altura.
-- **Queda fatal:** evite plataformas alcançáveis abaixo de `Y < -15 m` (há água/abismo).
-- **Spawn padrão da cena base:** `(-12, 1.5)` até ser reposicionado pelo `P`/`spawn`.
+- **Block / Ramp:** 2 m wide per column.
+- **Grid Row:** 3 m high (default `ystep`).
+- **Jump:** ~4 m standing, up to ~15 m at maximum speed.
+- **Vertical Spring:** launches ~22 m high.
+- **Fatal Fall:** avoid reachable platforms below `Y < -15 m` (water/abyss).
+- **Default Base Scene Spawn:** `(-12, 1.5)` until repositioned by `P`/`spawn`.
 
-### Tamanho do jogador e headroom (vãos passáveis)
+### Player Size and Headroom (Passable Clearances)
 
-A colisão do player é uma **esfera de raio 0.55 → diâmetro 1.1 m** (fixa; não encolhe ao rolar). Para passar por um vão, o mínimo físico é **~1.1 m**; mire em **≥1.5 m** para folga visual.
+The player collision is a **sphere of radius 0.55 → diameter 1.1 m** (fixed; does not shrink when rolling). To pass through a gap, the physical minimum is **~1.1 m**; aim for **≥1.5 m** for visual clearance.
 
-Cada linha do grid vale 3 m, então **uma linha totalmente vazia = 3 m de espaço vertical livre** — já mais que suficiente para o boneco.
+Each grid row is 3 m high, so **a single empty row = 3 m of free vertical space** — more than enough for the character.
 
-**Túnel sob uma plataforma flutuante (chão embaixo, flutuante em cima).** Duas regras antes da conta:
+**Tunnel under a floating platform (ground below, floating above).** Two rules before calculation:
 
-- Nunca empilhe `#` diretamente sobre `#`: o bloco de cima é detectado como **ancorado** (base de pedra de 4 m) e tampa o vão.
-- A plataforma flutuante tem a parte sólida descendo **1.5 m abaixo do seu centro** (grama + pedra), e a linha logo abaixo dela precisa estar **vazia** para que ela conte como flutuante.
+- Never stack `#` directly on top of `#`: the top block is detected as **anchored** (4 m stone base) and blocks the gap.
+- The floating platform has its solid part extending **1.5 m below its center** (grass + stone), and the row immediately below it must be **empty** for it to count as floating.
 
-Com **N linhas vazias** entre o chão e a flutuante, o vão livre é `(N+1) × 3 − 2.0` m:
+With **N empty rows** between the floor and the floating platform, the clearance height is `(N+1) * 3 - 2.0` m:
 
-| Linhas vazias (N) | Vão livre | Passa? (player 1.1 m) |
+| Empty Rows (N) | Clearance Height | Passable? (1.1 m player) |
 | :--- | :--- | :--- |
-| 1 | **4.0 m** | ✅ folgado |
+| 1 | **4.0 m** | ✅ plenty of room |
 | 2 | 7.0 m | ✅ |
 | 3 | 10.0 m | ✅ |
 
-Ou seja, a `ystep: 3.0`, **uma única linha vazia já abre um corredor de 4 m** — confortável. (`level_01`, com `ystep: 1.0`, é o caso apertado: precisaria de ~3 linhas vazias.)
+In other words, at `ystep: 3.0`, **a single empty row opens a 4 m corridor** — very comfortable. (`level_01`, with `ystep: 1.0`, is the tight case: it would need ~3 empty rows.)
 
 ---
 
-## Inconsistências conhecidas
+## Known Inconsistencies
 
-Pontos onde editor, conversor e docs antigas divergiam — registrados aqui para evitar surpresas:
+Points where the editor, converter, and old docs diverged — recorded here to avoid surprises:
 
-1. **Altura vertical — PADRONIZADA em 3.0.** Editor e `convert_map.py` usam o mesmo default (`3.0`), e o editor grava `ystep: 3.0` no `.txt`. Não há mais divergência de escala para fases novas.
-   - **Níveis legados:** `level_01.txt` fixa `ystep: 1.0` no cabeçalho e continua valendo. `level_04_map.txt` não tem cabeçalho e já compilava a 3.0, então segue inalterado.
+1. **Vertical Height — STANDARDIZED at 3.0.** Both the editor and `convert_map.py` use the same default (`3.0`), and the editor writes `ystep: 3.0` to the `.txt`. There is no longer a scale mismatch for new levels.
+   - **Legacy Levels:** `level_01.txt` locks `ystep: 1.0` in the header and remains valid. `level_04_map.txt` has no header and was already compiling at 3.0, so it remains unchanged.
 
-2. **Caminhos relativos.** Os comandos exibidos no editor usam `scripts/...`, que só funcionam se executados de dentro de `src/` (raiz do projeto Godot), não da raiz do repositório.
+2. **Relative Paths.** The commands shown in the editor use `scripts/...`, which only work if run from inside `src/` (Godot project root), not the repository root.
 
-3. **Alias `>`.** Aceito pelo conversor como dash pad, mas ausente no editor visual.
+3. **Alias `>`.** Accepted by the converter as a dash pad, but absent from the visual editor.

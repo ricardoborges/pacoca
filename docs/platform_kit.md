@@ -1,171 +1,171 @@
-# Documentação do Platformer Kit - Sistema de Level Design (Paçoca)
+# Platformer Kit Documentation - Level Design System (Paçoca)
 
-Esta documentação detalha a estrutura de assets, métricas físicas e diretrizes de design do **Platformer Kit** (Kenney) usado no projeto **Paçoca**. O objetivo deste documento é servir de contexto para prompts futuros na geração automatizada ou assistida de fases (levels).
+This documentation details the asset structure, physical metrics, and design guidelines of the **Platformer Kit** (Kenney) used in the **Paçoca** project. The goal of this document is to serve as context for future prompts in automated or assisted level generation.
 
 ---
 
-## 1. Regras Espaciais e Alinhamento (2.5D)
+## 1. Spatial Rules and Alignment (2.5D)
 
-O jogo **Paçoca** é um jogo de plataforma 3D rápido (estilo Sonic) com jogabilidade travada em um plano bidimensional.
+The game **Paçoca** is a fast-paced 3D platformer (Sonic-style) with gameplay locked to a two-dimensional plane.
 
 > [!IMPORTANT]
-> **Alinhamento do Eixo Z:**
-> * Toda a física de movimentação do jogador, patrulha de inimigos, coleta de anéis e ativação de molas ocorre estritamente na coordenada **`Z = 0`**.
-> * Os blocos de plataforma devem cobrir a faixa de jogo (comumente escalados com profundidade no eixo Z entre `2.0` e `4.0` unidades) para evitar que o jogador ou inimigos caiam visualmente ou fisicamente pelas bordas.
-> * O limite de queda livre (**Death Pit**) onde o jogador morre instantaneamente é **`Y < -15.0`**.
+> **Z-Axis Alignment:**
+> * All player movement physics, enemy patrols, ring collection, and spring activations occur strictly at the **`Z = 0`** coordinate.
+> * Platform blocks must cover the gameplay lane (commonly scaled with a Z-axis depth between `2.0` and `4.0` units) to prevent the player or enemies from visually or physically falling off the edges.
+> * The free-fall boundary (**Death Pit**) where the player dies instantly is **`Y < -15.0`**.
 
 ---
 
-## 2. Métricas e Comportamento Físico
+## 2. Metrics and Physical Behavior
 
-Para planejar a disposição dos blocos e obstáculos, use as seguintes métricas baseadas na física do jogador:
+To plan the layout of blocks and obstacles, use the following metrics based on player physics:
 
-### Velocidade e Salto do Jogador
-* **MaxSpeed (Velocidade Máxima):** `24.0` unidades/s.
-* **JumpVelocity (Força do Pulo):** `15.0` unidades/s (trajetória parabólica padrão).
-* **Air Dash:** O jogador pode realizar um impulso adicional no ar (custa o pulo duplo), que aplica um impulso rápido com velocidade de `18.0` unidades/s em diagonal superior (`45°`) ou vertical reta, suspendendo temporariamente a gravidade por `0.15s`.
-* **Gravidade:** `35.0` unidades/s².
+### Player Speed and Jumping
+* **MaxSpeed:** `24.0` units/s.
+* **JumpVelocity:** `15.0` units/s (standard parabolic trajectory).
+* **Air Dash:** The player can perform an additional boost in the air (costs the double jump), which applies a quick impulse at `18.0` units/s diagonally upward (`45°`) or straight vertically, temporarily suspending gravity for `0.15s`.
+* **Gravity:** `35.0` units/s².
 
-### Mecânica de Momento em Rampas
-O jogador acelera ao descer e desacelera ao subir rampas devido ao peso da gravidade alinhado ao vetor normal do chão.
-* **Rampa Suave (`block-grass-large-slope.glb`):**
-  * **Dimensões:** `2.0` de largura (X) por `1.0` de altura (Y).
-  * **Inclinação:** Relação `1:2` (inclinação de `0.5` ou `~26.5°`).
-  * **Propósito:** Permite manter velocidade constante e correr sem perder o fluxo da corrida.
-* **Rampa Íngreme (`block-grass-large-slope-steep.glb`):**
-  * **Dimensões:** `2.0` de largura (X) por `2.0` de altura (Y).
-  * **Inclinação:** Relação `1:1` (inclinação de `1.0` ou `45°`).
-  * **Propósito:** Funciona como parede ou desafio. Exige que o jogador venha com velocidade embalada ou utilize o **Spin Dash** no pé da rampa para conseguir subir.
+### Slope Momentum Mechanics
+The player accelerates when going down and decelerates when going up ramps due to the force of gravity aligned with the floor's normal vector.
+* **Smooth Slope (`block-grass-large-slope.glb`):**
+  * **Dimensions:** `2.0` wide (X) by `1.0` high (Y).
+  * **Inclination:** `1:2` ratio (slope of `0.5` or `~26.5°`).
+  * **Purpose:** Allows maintaining a constant speed and running without losing momentum.
+* **Steep Slope (`block-grass-large-slope-steep.glb`):**
+  * **Dimensions:** `2.0` wide (X) by `2.0` high (Y).
+  * **Inclination:** `1:1` ratio (slope of `1.0` or `45°`).
+  * **Purpose:** Functions as a wall or a challenge. Requires the player to approach with built-up speed or use the **Spin Dash** at the foot of the ramp to climb.
 
 ---
 
-## 3. Catálogo de Blocos de Terreno
+## 3. Terrain Block Catalog
 
-Os blocos de terreno padrão vêm em duas principais variações visuais: **Grass** (Grama - padrão para áreas ensolaradas) e **Snow** (Neve - para áreas congeladas). Todos os blocos usam colisores estáticos (`StaticBody3D`).
+Standard terrain blocks come in two main visual variations: **Grass** (standard for sunny areas) and **Snow** (for frozen areas). All blocks use static colliders (`StaticBody3D`).
 
-| Modelo GLB | Nome no Grid | Dimensões (X, Y, Z) | Pivot | Descrição e Propósito no Level Design |
+| GLB Model | Grid Name | Dimensions (X, Y, Z) | Pivot | Description and Purpose in Level Design |
 | :--- | :--- | :--- | :--- | :--- |
-| `block-grass-large.glb` | Bloco Plano Grande | $2.0 \times 1.0 \times 2.0$ | Centro | Bloco principal para construir plataformas sólidas de corrida. Espaçamento padrão de $2.0$ no eixo X. |
-| `block-grass-low.glb` | Bloco Plano Baixo | $1.0 \times 0.5 \times 1.0$ | Centro | Plataformas flutuantes menores e mais finas, usadas para trechos de precisão. Espaçamento de $1.0$ no eixo X. |
-| `block-grass-large-slope.glb` | Rampa Suave | $2.0 \times 1.0 \times 2.0$ | Centro | Rampa para ganho/perda de momento. Sobe $1$ unidade em Y a cada $2$ unidades em X. |
-| `block-grass-large-slope-steep.glb` | Rampa Íngreme | $2.0 \times 2.0 \times 2.0$ | Centro | Rampa íngreme de 45°. Sobe $2$ unidades em Y a cada $2$ unidades em X. |
-| `block-grass-curve.glb` | Bloco Curvo | $2.0 \times 1.0 \times 2.0$ | Centro | Usado para cantos estéticos e curvas de pistas que mudam de direção visual (embora a física continue travada em Z=0). |
-| `block-grass-corner.glb` | Canto de Bloco | $1.0 \times 1.0 \times 1.0$ | Centro | Acabamento estético de bordas de plataformas suspensas. |
+| `block-grass-large.glb` | Large Flat Block | $2.0 \times 1.0 \times 2.0$ | Center | Main block for building solid running platforms. Standard spacing of $2.0$ on the X axis. |
+| `block-grass-low.glb` | Low Flat Block | $1.0 \times 0.5 \times 1.0$ | Center | Smaller and thinner floating platforms, used for precision sections. Spacing of $1.0$ on the X-axis. |
+| `block-grass-large-slope.glb` | Smooth Slope | $2.0 \times 1.0 \times 2.0$ | Center | Slope for gaining/losing momentum. Rises $1$ Y unit for every $2$ X units. |
+| `block-grass-large-slope-steep.glb` | Steep Slope | $2.0 \times 2.0 \times 2.0$ | Center | Steep 45° slope. Rises $2$ Y units for every $2$ X units. |
+| `block-grass-curve.glb` | Curved Block | $2.0 \times 1.0 \times 2.0$ | Center | Used for aesthetic corners and curves of tracks that change visual direction (though physics remain locked to Z=0). |
+| `block-grass-corner.glb` | Block Corner | $1.0 \times 1.0 \times 1.0$ | Center | Aesthetic finish for the edges of suspended platforms. |
 
 > [!NOTE]
-> Para todas as versões de Neve, substitua `-grass-` por `-snow-` nos nomes dos arquivos (ex: `block-snow-large.glb`). Ambos possuem o mesmo comportamento de colisão.
+> For all Snow versions, replace `-grass-` with `-snow-` in the file names (e.g., `block-snow-large.glb`). Both have the same collision behavior.
 
 ---
 
-## 4. Elementos Interativos e Mecânicas (Cenas customizadas)
+## 4. Interactive Elements and Mechanics (Custom Scenes)
 
-Esses objetos possuem lógica própria implementada via scripts C# no Godot e devem ser instanciados usando suas respectivas cenas (`.tscn`).
+These objects have their own logic implemented via C# scripts in Godot and must be instantiated using their respective scenes (`.tscn`).
 
 ```mermaid
 graph TD
-    Player[Jogador] -->|Toca em| Spring[Mola: Impulso Direcional]
-    Player -->|Toca em| DashPad[Painel de Velocidade: Aceleração]
-    Player -->|Toca em| Spikes[Espinhos: Perda de Anéis]
-    Player -->|Toca em| Enemy[Inimigo: Dano ou Destruição]
-    Player -->|Coleta| Ring[Anel: Proteção/Pontos]
+    Player[Player] -->|Touches| Spring[Spring: Directional Impulse]
+    Player -->|Touches| DashPad[Speed Pad: Acceleration]
+    Player -->|Touches| Spikes[Spikes: Lose Rings]
+    Player -->|Touches| Enemy[Enemy: Damage or Destruction]
+    Player -->|Collects| Ring[Ring: Protection/Points]
 ```
 
-### A. Mola (`res://scenes/spring.tscn`)
-* **Modelo Visual:** `trap-spikes.glb` ou `spring.glb`
-* **Tipo Godot:** `Area3D` com script `Spring.cs`
-* **Parâmetros Editáveis:**
-  * `LaunchForce` (Padrão: `22.0`): A intensidade do impulso.
-  * `LaunchDirection` (Padrão: `Vector3(0, 1, 0)`): Direção do impulso. Molas verticais jogam o jogador para cima; molas diagonais (ex: `Vector3(1.2, 1.5, 0)`) são ideais para cruzar abismos em alta velocidade.
-  * `ControlLockDuration` (Padrão: `0.5`): Tempo em segundos que o jogador fica impossibilitado de alterar a direção no teclado, garantindo que ele complete a parábola desenhada pela mola.
-* **Uso no Design:** Cruzamento de fossos, atalhos elevados e redirecionamento de fluxo.
+### A. Spring (`res://scenes/spring.tscn`)
+* **Visual Model:** `trap-spikes.glb` or `spring.glb`
+* **Godot Type:** `Area3D` with `Spring.cs` script
+* **Editable Parameters:**
+  * `LaunchForce` (Default: `22.0`): The intensity of the launch.
+  * `LaunchDirection` (Default: `Vector3(0, 1, 0)`): The direction of the launch. Vertical springs launch the player straight up; diagonal springs (e.g., `Vector3(1.2, 1.5, 0)`) are ideal for crossing pits at high speed.
+  * `ControlLockDuration` (Default: `0.5`): Time in seconds during which the player cannot alter direction via keyboard, ensuring they complete the trajectory designed by the spring.
+* **Usage in Design:** Pit crossings, high-altitude shortcuts, and flow redirecting.
 
-### B. Painel de Velocidade (`res://scenes/dash_pad.tscn`)
-* **Modelo Visual:** `conveyor-belt.glb` ou customizado
-* **Tipo Godot:** `Area3D` com script `DashPad.cs`
-* **Parâmetros Editáveis:**
-  * `BoostForce` (Padrão: `32.0`): Velocidade instantânea que o jogador atinge ao passar pelo painel.
-  * `BoostDirection` (Padrão: `Vector3(1, 0, 0)`): Direção do impulso (normalmente direita ou esquerda).
-  * `ControlLockDuration` (Padrão: `0.4`): Tempo de trava de controle do jogador.
-* **Comportamento:** Força o jogador a entrar no estado de **Rolo (Rolling)**, permitindo que ele destrua inimigos no caminho e passe por túneis baixos.
-* **Uso no Design:** Início de pistas de velocidade ou rampas para decolagem de longo alcance.
+### B. Speed Pad (`res://scenes/dash_pad.tscn`)
+* **Visual Model:** `conveyor-belt.glb` or custom
+* **Godot Type:** `Area3D` with `DashPad.cs` script
+* **Editable Parameters:**
+  * `BoostForce` (Default: `32.0`): Instantaneous speed the player reaches when passing through the pad.
+  * `BoostDirection` (Default: `Vector3(1, 0, 0)`): Boost direction (usually right or left).
+  * `ControlLockDuration` (Default: `0.4`): Time player control is locked.
+* **Behavior:** Forces the player into the **Rolling** state, allowing them to destroy enemies along the path and fit through low tunnels.
+* **Usage in Design:** Start of speed tracks or launch ramps for long-range jumps.
 
-### C. Anel (`res://scenes/ring.tscn`)
-* **Modelo Visual:** Modelo de anel giratório
-* **Tipo Godot:** `Area3D` com script `Ring.cs`
-* **Comportamento:** Quando coletado, aumenta os anéis do jogador. Se o jogador for atingido por um perigo (inimigo ou espinho) e possuir anéis, ele perde todos os anéis, que se espalham de forma física na tela para que possam ser recoletados. Se for atingido com 0 anéis, o jogador morre.
-* **Uso no Design:** Devem ser dispostos em arcos lineares ou parábolas de pulo, servindo como uma pista visual (guia) para o jogador saber onde pular e qual velocidade manter.
-
----
-
-## 5. Inimigos e Perigos
-
-### A. Inimigo Básico (`res://scenes/enemy.tscn`)
-* **Modelo Visual:** `character-oobi.glb` ou variantes
-* **Tipo Godot:** `CharacterBody3D` com script `Enemy.cs`
-* **Comportamento:** Patrulha horizontalmente em uma velocidade definida por `Speed`. Ele vira automaticamente na direção oposta ao colidir com uma parede ou ao detectar a proximidade de um penhasco (cliff edge).
-* **Interação com o Jogador:**
-  * Se o jogador tocá-lo por cima (caindo) ou estiver no estado de **Rolo/Spin Dash**, o inimigo é destruído e o jogador ganha um impulso de pulo de `10.0` unidades/s.
-  * Caso contrário, o jogador sofre dano (perde anéis ou morre).
-* **Uso no Design:** Placer em plataformas retas para interromper o fluxo simples de corrida, exigindo que o jogador pule ou use Spin Dash para atropelá-lo.
-
-### B. Espinhos (`res://scenes/spikes.tscn`)
-* **Modelo Visual:** `trap-spikes.glb`
-* **Tipo Godot:** `Area3D` com script `Spikes.cs`
-* **Comportamento:** Causa dano instantâneo ao jogador que entrar em contato com sua área de colisão.
-* **Uso no Design:** Posicionados em fossos (entre plataformas) ou no pé de paredes para punir quedas e erros de tempo no pulo.
-
-### C. Outros Perigos em Potencial (Assets do Kit)
-* `saw.glb`: Serra giratória de movimentação constante. Excelente obstáculo de tempo (o jogador deve esperar passar).
-* `bomb.glb`: Mina estática que explode ao toque.
-* `spike-block-wide.glb` / `spike-block.glb`: Paredes de espinhos estáticos.
+### C. Ring (`res://scenes/ring.tscn`)
+* **Visual Model:** Rotating ring model
+* **Godot Type:** `Area3D` with `Ring.cs` script
+* **Behavior:** When collected, increases the player's ring count. If the player is hit by a hazard (enemy or spikes) and has rings, they lose all rings, which scatter with physics on the screen to be re-collected. If hit with 0 rings, the player dies.
+* **Usage in Design:** Should be arranged in linear arcs or jump parabolas, serving as a visual guide for the player to know where to jump and what speed to maintain.
 
 ---
 
-## 6. Elementos Estruturais e Decorativos
+## 5. Enemies and Hazards
 
-Estes modelos servem para dar acabamento visual e estrutural às fases, além de fornecer pontos de referência e orientação espacial para o jogador.
+### A. Basic Enemy (`res://scenes/enemy.tscn`)
+* **Visual Model:** `character-oobi.glb` or variants
+* **Godot Type:** `CharacterBody3D` with `Enemy.cs` script
+* **Behavior:** Patrols horizontally at a speed defined by `Speed`. It automatically turns in the opposite direction when colliding with a wall or when detecting a cliff edge.
+* **Player Interaction:**
+  * If the player touches it from above (falling) or is in the **Rolling/Spin Dash** state, the enemy is destroyed and the player gains a jump boost of `10.0` units/s.
+  * Otherwise, the player takes damage (loses rings or dies).
+* **Usage in Design:** Placed on flat platforms to interrupt simple running flow, requiring the player to jump or use Spin Dash to run them over.
 
-| Categoria | Modelos GLB Recomendados | Propósito no Level Design |
+### B. Spikes (`res://scenes/spikes.tscn`)
+* **Visual Model:** `trap-spikes.glb`
+* **Godot Type:** `Area3D` with `Spikes.cs` script
+* **Behavior:** Causes instant damage to any player that enters its collision area.
+* **Usage in Design:** Positioned in pits (between platforms) or at the foot of walls to punish falls and incorrect jump timing.
+
+### C. Other Potential Hazards (Kit Assets)
+* `saw.glb`: Rotating saw with constant movement. Excellent timing obstacle (the player must wait for it to pass).
+* `bomb.glb`: Static mine that explodes on contact.
+* `spike-block-wide.glb` / `spike-block.glb`: Static spike walls.
+
+---
+
+## 6. Structural and Decorative Elements
+
+These models serve to provide visual polish and structure to the levels, as well as reference points and spatial orientation for the player.
+
+| Category | Recommended GLB Models | Purpose in Level Design |
 | :--- | :--- | :--- |
-| **Sinalização** | `arrow.glb`, `arrows.glb`, `sign.glb` | Indicar a direção do fluxo da fase em bifurcações ou alertar sobre perigos iminentes à frente. |
-| **Vegetação** | `tree.glb`, `tree-pine.glb`, `tree-snow.glb`, `flowers.glb`, `grass.glb` | Enriquecer visualmente o cenário. Devem ser colocados levemente ao fundo (Z ligeiramente negativo, como `Z = -1.8`) para não obstruir a visão da gameplay em Z=0. |
-| **Estruturas** | `fence-straight.glb`, `fence-corner.glb`, `fence-rope.glb` | Delimitar visualmente caminhos e beiradas de plataformas. |
-| **Obstáculos Físicos** | `crate.glb`, `crate-strong.glb`, `barrel.glb` | Podem ser empilhados para criar barreiras físicas simples que bloqueiam o caminho do jogador, exigindo um pulo ou destruição (se configurados como quebráveis). |
-| **Progressão** | `door-open.glb`, `door-large-open.glb` | Usados para representar o portal ou portão de chegada do Goal (fim da fase). |
+| **Signage** | `arrow.glb`, `arrows.glb`, `sign.glb` | Indicate the flow direction at forks or warn of upcoming hazards. |
+| **Vegetation** | `tree.glb`, `tree-pine.glb`, `tree-snow.glb`, `flowers.glb`, `grass.glb` | Rich visual background. Should be placed slightly in the background (Z slightly negative, such as `Z = -1.8`) to not obstruct gameplay at Z=0. |
+| **Structures** | `fence-straight.glb`, `fence-corner.glb`, `fence-rope.glb` | Visually define paths and platform edges. |
+| **Physical Obstacles** | `crate.glb`, `crate-strong.glb`, `barrel.glb` | Can be stacked to create simple barriers blocking the player's path, requiring a jump or destruction (if breakable). |
+| **Progression** | `door-open.glb`, `door-large-open.glb` | Used to represent the arrival gate at the Goal (end of level). |
 
 ---
 
-## 7. Diretrizes de Composição e Padrões (Patterns) de Fases
+## 7. Composition Guidelines and Level Design Patterns
 
-Ao gerar ou planejar fases para o **Paçoca**, siga estes padrões clássicos de design de plataformas de alta velocidade:
+When generating or planning levels for **Paçoca**, follow these classic speed platformer design patterns:
 
-### Padrão 1: Pista de Lançamento (Launch Pad)
-1. Coloque um **Dash Pad** apontando para a direita em uma reta livre.
-2. Posicione uma fileira horizontal de **Rings** (5 a 8 anéis) logo após o Dash Pad.
-3. No final da reta, coloque uma **Rampa Suave** (`block-grass-large-slope.glb`) inclinando para cima.
-4. O momento gerado fará o jogador decolar em uma parábola perfeita. Coloque um arco parabólico de **Rings** no ar para indicar a trajetória ideal.
+### Pattern 1: Launch Pad
+1. Place a **Dash Pad** pointing to the right on a clear straight path.
+2. Position a horizontal line of **Rings** (5 to 8 rings) immediately after the Dash Pad.
+3. At the end of the straight path, place a **Smooth Slope** (`block-grass-large-slope.glb`) inclining upward.
+4. The generated momentum will launch the player in a perfect parabola. Place a parabolic arc of **Rings** in the air to guide the ideal trajectory.
 
-### Padrão 2: O Fosso de Espinhos (Spike Pit Gap)
-1. Duas plataformas elevadas separadas por um vão de $6$ a $10$ unidades de distância.
-2. O chão do vão deve conter vários **Spikes** (`res://scenes/spikes.tscn`) lado a lado em `Y = -3.0` (ou posicionado adequadamente abaixo da altura das plataformas).
-3. No meio do fosso, pode haver plataformas flutuantes estreitas de precisão utilizando `block-grass-low.glb` com **Rings** em cima.
+### Pattern 2: The Spike Pit Gap
+1. Two elevated platforms separated by a gap of $6$ to $10$ units of distance.
+2. The bottom of the gap should contain several **Spikes** (`res://scenes/spikes.tscn`) side by side at `Y = -3.0` (or positioned appropriately below the platforms).
+3. In the middle of the pit, there can be narrow floating precision platforms using `block-grass-low.glb` with **Rings** on top.
 
-### Padrão 3: O Salto Assistido por Mola (Spring Jump)
-1. Uma parede intransponível de $6.0$ unidades de altura.
-2. Uma **Mola Vertical** colocada próxima à base da parede com `LaunchForce = 22.0` e `ControlLockDuration = 0.5`.
-3. Isso lança o jogador verticalmente, permitindo-lhe pousar em segurança em cima da plataforma elevada.
+### Pattern 3: The Spring Jump
+1. An impassable wall $6.0$ units high.
+2. A **Vertical Spring** placed near the base of the wall with `LaunchForce = 22.0` and `ControlLockDuration = 0.5`.
+3. This launches the player vertically, allowing them to land safely on top of the elevated platform.
 
-### Padrão 4: Rota de Alta Velocidade vs Rota de Segurança
-* **Rota Superior (Alta Velocidade):** Requer pulos precisos e o uso de molas e Dash Pads. Oferece mais anéis, menos perigos e caminhos mais rápidos.
-* **Rota Inferior (Segurança/Erro):** Se o jogador falhar nos pulos superiores, cai nesta rota. Contém mais inimigos, espinhos, plataformas menores e velocidade reduzida.
+### Pattern 4: High-Speed Route vs. Safe Route
+* **Upper Route (High Speed):** Requires precise jumps and the use of springs and Dash Pads. Offers more rings, fewer hazards, and faster paths.
+* **Lower Route (Safe/Error fallback):** If the player fails upper jumps, they fall to this route. Contains more enemies, spikes, smaller platforms, and reduced speed.
 
 ---
 
-## 8. Exemplo de Estrutura de Coordenadas para Prompt de Geração
+## 8. Coordinate Structure Example for Generation Prompt
 
-Ao pedir para construir uma fase, o modelo deve gerar os objetos usando posicionamento absoluto no plano XY. 
+When asking to construct a stage, the model should generate objects using absolute positioning on the XY plane.
 
-Abaixo está uma referência de grid linear para um segmento simples de fase:
+Below is a linear grid reference for a simple stage segment:
 
 ```json
 {
@@ -185,4 +185,4 @@ Abaixo está uma referência de grid linear para um segmento simples de fase:
 ```
 
 > [!TIP]
-> Utilize sempre as proporções corretas de distância. Um pulo padrão sem velocidade correta alcança cerca de $4$ unidades horizontalmente. Um pulo correndo na velocidade máxima (`MaxSpeed`) alcança facilmente $12$ a $15$ unidades de distância.
+> Always use correct distance proportions. A standard jump without speed covers about $4$ units horizontally. A running jump at maximum speed (`MaxSpeed`) easily covers $12$ to $15$ units of distance.
