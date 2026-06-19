@@ -1,18 +1,20 @@
 level: 04
-name: Parque do Pacoca
+name: Ruínas Celestes
+ystep: 3.0
 
 [grid]
 
-                                                                          G
-                                                                          #
-                                                  ooo                    ##
-                                                ooooooo                 ###
-                                              ooo     ooo              ####
-                              D  ooo        ooo         ooo           #####
-                             #######       V               V         ######
-                 C                        ##               ##       #######
-         ooo    ###       #########                                #######
-       ooooooo                                                    ########
-     ooo     ooo                                                 #########
-      P                                                         ##########
-##################   #################   ################################
+
+
+
+
+
+
+
+
+
+
+
+          oooo             G
+/\    oooo    ooooo   C
+##############################

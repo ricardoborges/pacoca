@@ -1,5 +1,5 @@
 // --- Application State ---
-const Y_STEP = 4.0;
+const Y_STEP = 3.0;
 let levelId = "04";
 let levelName = "Ruínas Celestes";
 let gridWidth = 100;
@@ -79,13 +79,32 @@ document.addEventListener("DOMContentLoaded", () => {
         container.scrollLeft = (e.target.value / 100) * maxScroll;
     });
 
-    // Set toggle buttons to active initially
-    document.getElementById("btn-toggle-sidebar").classList.add("active");
-    document.getElementById("btn-toggle-output").classList.add("active");
+    // Keyboard shortcuts (ignore while typing in inputs)
+    window.addEventListener("keydown", (e) => {
+        const tag = (e.target.tagName || "").toLowerCase();
+        const typing = tag === "input" || tag === "textarea";
+        if (e.key === "Escape") {
+            const settings = document.getElementById("settings-modal");
+            const maps = document.getElementById("maps-modal");
+            if (settings && !settings.hidden) closeSettings();
+            else if (maps && !maps.hidden) closeMaps();
+            else setDrawer(false);
+            return;
+        }
+        if (e.key === "F5") {
+            e.preventDefault(); // não recarregar a página
+            testLevel();
+            return;
+        }
+        if (typing) return;
+        if (e.key === "b" || e.key === "B") setToolMode("paint");
+        else if (e.key === "e" || e.key === "E") setToolMode("erase");
+    });
 
     // Initial setups
     updateDynamicTexts();
     generateExports();
+    loadGodotConfig();
 });
 
 // --- UI Construction ---
@@ -93,26 +112,18 @@ document.addEventListener("DOMContentLoaded", () => {
 function initPalette() {
     const paletteList = document.getElementById("palette-list");
     paletteList.innerHTML = "";
-    
-    ELEMENTS.forEach((el, index) => {
+
+    ELEMENTS.forEach((el) => {
+        const glyph = el.symbol === "\\" ? "\\" : el.symbol;
         const item = document.createElement("button");
-        item.className = "palette-item" + (selectedElement === el.symbol ? " active" : "");
+        item.className = "palette-chip" + (selectedElement === el.symbol ? " active" : "");
+        item.dataset.tip = `${el.name}  ·  '${glyph}'`;
         item.title = el.desc;
         item.onclick = () => selectElement(el.symbol, item);
-        
-        let styleAttr = `background-color: ${el.color}; color: white;`;
-        if (el.symbol === "o" || el.symbol === "D") {
-            styleAttr = `border: 2px solid ${el.color}; color: ${el.color}; background: rgba(255,255,255,0.05);`;
-        } else if (el.symbol === "S") {
-            styleAttr = `border-bottom: 4px solid ${el.color}; border-top: 1px solid var(--border-color); color: ${el.color}; background: rgba(255,255,255,0.05);`;
-        }
-        
+
         item.innerHTML = `
-            <div class="palette-swatch" style="${styleAttr}">${el.symbol === "\\" ? "\\\\" : el.symbol}</div>
-            <div class="palette-info">
-                <span class="palette-name">${el.name}</span>
-                <span class="palette-symbol">Caractere: '${el.symbol === "\\" ? "\\\\" : el.symbol}'</span>
-            </div>
+            <div class="palette-swatch"><img src="icons/${el.class}.svg" alt="${el.name}" draggable="false"></div>
+            <span class="palette-key">${el.name.split(" ")[0]}</span>
         `;
         paletteList.appendChild(item);
     });
@@ -234,7 +245,7 @@ function selectElement(symbol, elementBtn) {
     currentTool = "paint";
     
     // Update active UI classes
-    document.querySelectorAll(".palette-item").forEach(item => item.classList.remove("active"));
+    document.querySelectorAll(".palette-chip").forEach(item => item.classList.remove("active"));
     if (elementBtn) {
         elementBtn.classList.add("active");
     }
@@ -353,8 +364,8 @@ function updateCoordinatesDisplay(c, r) {
     const xCoord = (c * 2.0).toFixed(1);
     const yCoord = ((gridHeight - 1 - r) * Y_STEP).toFixed(1);
     
-    document.getElementById("coord-display").innerText = 
-        `Coord: Col: ${c}, Lin: ${r} | Posição Real (Godot): X: ${xCoord}m, Y: ${yCoord}m`;
+    document.getElementById("coord-display").innerText =
+        `Col ${c}, Lin ${r}  ·  X: ${xCoord}m  Y: ${yCoord}m`;
 }
 
 // --- Exporters (ASCII & JSON) ---
@@ -367,7 +378,11 @@ function generateExports() {
 function generateASCIIExport() {
     let output = "";
     output += `level: ${levelId}\n`;
-    output += `name: ${levelName}\n\n`;
+    output += `name: ${levelName}\n`;
+    // Emit ystep so convert_map.py parses rows at the same scale the editor draws
+    // them (Y_STEP). Without this, the converter falls back to its default and the
+    // map comes out vertically compressed.
+    output += `ystep: ${Y_STEP.toFixed(1)}\n\n`;
     output += `[grid]\n`;
     
     // We output line-by-line from row r = 0 to gridHeight - 1
@@ -583,7 +598,7 @@ function updateDynamicTexts() {
     // Update IDs inside compiling guide tab
     document.querySelectorAll(".dynamic-level-id").forEach(el => el.innerText = levelId);
     
-    const compileCmd = `python scripts/convert_map.py --input scripts/levels/level_${levelId}_map.txt --level ${levelId}`;
+    const compileCmd = `python scripts/convert_map.py --input ../tools/map_editor/levels/level_${levelId}_map.txt --level ${levelId}`;
     document.getElementById("compile-command").innerText = compileCmd;
 }
 
@@ -940,6 +955,386 @@ function copyCommand() {
     }
 }
 
+// --- Saved maps (persistence) ---
+
+function openMaps() {
+    const modal = document.getElementById("maps-modal");
+    modal.hidden = false;
+    lucide.createIcons();
+    const hint = document.getElementById("maps-savehint");
+    hint.textContent = `Salva como level_${(levelId || "").padStart(2, "0")}_map.txt em tools/map_editor/levels/`;
+    if (location.protocol === "file:") {
+        document.getElementById("maps-list").innerHTML =
+            '<p class="tab-note">Requer o servidor local (python tools/map_editor/server.py).</p>';
+        return;
+    }
+    refreshMapsList();
+}
+
+function closeMaps() {
+    document.getElementById("maps-modal").hidden = true;
+}
+
+function onMapsBackdrop(e) {
+    if (e.target === document.getElementById("maps-modal")) closeMaps();
+}
+
+function formatMtime(epochSeconds) {
+    try {
+        return new Date(epochSeconds * 1000).toLocaleString("pt-BR", {
+            day: "2-digit", month: "2-digit", year: "numeric",
+            hour: "2-digit", minute: "2-digit"
+        });
+    } catch (e) {
+        return "";
+    }
+}
+
+async function refreshMapsList() {
+    const list = document.getElementById("maps-list");
+    list.innerHTML = '<p class="tab-note">Carregando…</p>';
+    try {
+        const resp = await fetch("/api/maps");
+        const data = await resp.json();
+        const maps = (data && data.maps) || [];
+        if (!maps.length) {
+            list.innerHTML = '<p class="tab-note">Nenhum mapa salvo ainda. Desenhe e clique em "Salvar mapa atual".</p>';
+            return;
+        }
+        list.innerHTML = "";
+        maps.forEach(m => {
+            const row = document.createElement("div");
+            row.className = "map-row";
+            const name = m.name ? m.name : "(sem nome)";
+            row.innerHTML = `
+                <div class="map-meta">
+                    <span class="map-badge">${m.level}</span>
+                    <div class="map-text">
+                        <span class="map-name">${escapeHtml(name)}</span>
+                        <span class="map-sub">${m.file} · ${formatMtime(m.mtime)}</span>
+                    </div>
+                </div>
+                <div class="map-actions">
+                    <button class="btn btn-sm btn-secondary" title="Abrir para editar"><i data-lucide="pencil"></i> Editar</button>
+                    <button class="btn btn-sm btn-danger-outline" title="Excluir"><i data-lucide="trash-2"></i></button>
+                </div>
+            `;
+            const [editBtn, delBtn] = row.querySelectorAll("button");
+            editBtn.onclick = () => openMap(m.level, m.format);
+            delBtn.onclick = () => deleteMap(m.level, m.format, name);
+            list.appendChild(row);
+        });
+        lucide.createIcons();
+    } catch (err) {
+        list.innerHTML = '<p class="tab-note">Servidor local não encontrado.</p>';
+    }
+}
+
+async function saveCurrentMap() {
+    if (location.protocol === "file:") { showToast("Requer o servidor local", "alert-triangle"); return; }
+    try {
+        const content = document.getElementById("ascii-output").value;
+        const resp = await fetch("/api/maps", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level: levelId, format: "txt", content })
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            showToast(`Mapa salvo: ${data.file}`, "save");
+            refreshMapsList();
+        } else {
+            showToast(data.error || "Falha ao salvar", "alert-triangle");
+        }
+    } catch (err) {
+        showToast("Servidor local não encontrado", "alert-triangle");
+    }
+}
+
+async function openMap(level, format) {
+    try {
+        const resp = await fetch(`/api/maps/item?level=${encodeURIComponent(level)}&format=${encodeURIComponent(format)}`);
+        const data = await resp.json();
+        if (!data.ok) {
+            showToast(data.error || "Falha ao abrir", "alert-triangle");
+            return;
+        }
+        if (data.format === "json") {
+            importJSON(JSON.parse(data.content));
+        } else {
+            importASCII(data.content);
+        }
+        closeMaps();
+        showToast(`Mapa ${data.level} carregado para edição`, "pencil");
+    } catch (err) {
+        showToast("Servidor local não encontrado", "alert-triangle");
+    }
+}
+
+async function deleteMap(level, format, name) {
+    if (!confirm(`Excluir o mapa do nível ${level}${name ? ` ("${name}")` : ""}? Esta ação não pode ser desfeita.`)) return;
+    try {
+        const resp = await fetch("/api/maps/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level, format })
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            showToast(`Mapa ${level} excluído`, "trash-2");
+            refreshMapsList();
+        } else {
+            showToast(data.error || "Falha ao excluir", "alert-triangle");
+        }
+    } catch (err) {
+        showToast("Servidor local não encontrado", "alert-triangle");
+    }
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+}
+
+// --- Godot path configuration ---
+
+const GODOT_SOURCE_LABELS = {
+    saved: "definido manualmente",
+    env: "variável GODOT_BIN",
+    path: "detectado no PATH",
+    default: "caminho padrão",
+};
+
+function applyGodotConfig(data) {
+    const input = document.getElementById("godot-path");
+    const status = document.getElementById("godot-status");
+    if (data && data.godot_bin && document.activeElement !== input) {
+        input.value = data.godot_bin;
+    }
+    status.classList.remove("ok", "bad");
+    if (!data || !data.ok) {
+        status.textContent = "Não foi possível ler a configuração.";
+        status.classList.add("bad");
+        return;
+    }
+    const label = GODOT_SOURCE_LABELS[data.source] || data.source;
+    if (data.exists) {
+        status.textContent = `✓ Godot encontrado · ${label}`;
+        status.classList.add("ok");
+    } else {
+        status.textContent = `✗ Não encontrado neste caminho (${label})`;
+        status.classList.add("bad");
+    }
+}
+
+async function loadGodotConfig() {
+    if (location.protocol === "file:") return;
+    try {
+        const resp = await fetch("/api/config");
+        applyGodotConfig(await resp.json());
+    } catch (err) {
+        // server not reachable; leave defaults
+    }
+}
+
+function openSettings() {
+    const modal = document.getElementById("settings-modal");
+    modal.hidden = false;
+    lucide.createIcons();
+    if (location.protocol === "file:") {
+        const status = document.getElementById("godot-status");
+        status.textContent = "Requer o servidor local (python tools/map_editor/server.py).";
+        status.classList.remove("ok");
+        status.classList.add("bad");
+        return;
+    }
+    loadGodotConfig();
+    setTimeout(() => document.getElementById("godot-path").focus(), 50);
+}
+
+function closeSettings() {
+    document.getElementById("settings-modal").hidden = true;
+}
+
+function onSettingsBackdrop(e) {
+    if (e.target === document.getElementById("settings-modal")) closeSettings();
+}
+
+async function postGodotConfig(godotBin) {
+    const resp = await fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ godot_bin: godotBin })
+    });
+    return resp.json();
+}
+
+async function detectGodot() {
+    if (location.protocol === "file:") { showToast("Requer o servidor local", "alert-triangle"); return; }
+    try {
+        // Clearing the saved value makes the server auto-detect (env -> PATH -> default).
+        const data = await postGodotConfig("");
+        applyGodotConfig(data);
+        if (data.exists && data.source === "path") showToast("Godot detectado no PATH!", "check");
+        else if (data.exists) showToast("Usando Godot (" + (GODOT_SOURCE_LABELS[data.source] || data.source) + ")", "check");
+        else showToast("Godot não encontrado no PATH — informe o caminho", "alert-triangle");
+    } catch (err) {
+        showToast("Servidor local não encontrado", "alert-triangle");
+    }
+}
+
+async function saveGodotPath() {
+    if (location.protocol === "file:") { showToast("Requer o servidor local", "alert-triangle"); return; }
+    const value = document.getElementById("godot-path").value.trim();
+    try {
+        const data = await postGodotConfig(value);
+        applyGodotConfig(data);
+        if (data.exists) showToast("Caminho do Godot salvo!", "check");
+        else showToast("Salvo, mas o caminho não existe", "alert-triangle");
+    } catch (err) {
+        showToast("Servidor local não encontrado", "alert-triangle");
+    }
+}
+
+async function testLevel() {
+    if (location.protocol === "file:") {
+        showToast("Use o servidor local para testar a fase", "alert-triangle");
+        return;
+    }
+
+    const btn = document.getElementById("btn-test-level");
+    const resultBox = document.getElementById("compile-result");
+    btn.disabled = true;
+    showToast("Compilando fase " + levelId + "...", "hammer");
+
+    try {
+        // 1. Compile the current ASCII map.
+        const content = document.getElementById("ascii-output").value;
+        const cResp = await fetch("/api/compile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level: levelId, format: "txt", content })
+        });
+        const cData = await cResp.json();
+
+        if (!cData.ok) {
+            openDrawerTab("tab-instructions");
+            resultBox.hidden = false;
+            resultBox.textContent =
+                "❌ Falha ao compilar:\n\n" +
+                ((cData.stderr || cData.error || "").trim()) +
+                (cData.stdout ? "\n\n" + cData.stdout.trim() : "");
+            showToast("Falha na compilação", "alert-triangle");
+            return;
+        }
+
+        // 2. Launch Godot straight into this level.
+        showToast("Compilado! Iniciando Godot...", "gamepad-2");
+        const rResp = await fetch("/api/run", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level: levelId })
+        });
+        const rData = await rResp.json();
+
+        if (rData.ok) {
+            showToast(`Testando a fase ${rData.level} no Godot!`, "check");
+            if (rData.build_warning) showToast(rData.build_warning, "alert-triangle");
+        } else {
+            openDrawerTab("tab-instructions");
+            resultBox.hidden = false;
+            resultBox.textContent =
+                "❌ " + (rData.error || "Falha ao iniciar o Godot") +
+                (rData.build_log ? "\n\n" + rData.build_log.trim() : "");
+            showToast(rData.error || "Falha ao executar", "alert-triangle");
+        }
+    } catch (err) {
+        showToast("Servidor local não encontrado", "alert-triangle");
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function runGame() {
+    if (location.protocol === "file:") {
+        showToast("Use o servidor local para executar", "alert-triangle");
+        return;
+    }
+    showToast("Iniciando o Godot...", "gamepad-2");
+    try {
+        const resp = await fetch("/api/run", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "{}"
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            showToast("Godot iniciado!", "check");
+        } else {
+            showToast(data.error || "Falha ao iniciar o Godot", "alert-triangle");
+        }
+    } catch (err) {
+        showToast("Servidor local não encontrado", "alert-triangle");
+    }
+}
+
+async function compileLevel() {
+    const btn = document.getElementById("btn-compile-live");
+    const resultBox = document.getElementById("compile-result");
+
+    if (location.protocol === "file:") {
+        resultBox.hidden = false;
+        resultBox.textContent =
+            "⚠️ Você abriu o editor via file://, que não pode compilar.\n" +
+            "Inicie o servidor local e abra pelo navegador:\n\n" +
+            "  python tools/map_editor/server.py\n" +
+            "  http://localhost:8000";
+        showToast("Use o servidor local para compilar", "alert-triangle");
+        return;
+    }
+
+    const content = document.getElementById("ascii-output").value;
+    resultBox.hidden = false;
+    resultBox.textContent = "⏳ Compilando nível " + levelId + "...";
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch("/api/compile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level: levelId, format: "txt", content })
+        });
+        const data = await resp.json();
+
+        if (data.ok) {
+            resultBox.textContent =
+                `✅ Nível ${data.level} compilado com sucesso!\n` +
+                `Mapa:  ${data.map_file}\n` +
+                `Cena:  ${data.scene_file}\n\n` +
+                `Abra/recarregue o projeto no Godot para testar.\n\n` +
+                (data.stdout || "").trim();
+            showToast(`Nível ${data.level} pronto para o Godot!`, "check");
+        } else {
+            resultBox.textContent =
+                `❌ Falha na compilação.\n\n` +
+                ((data.stderr || data.error || "").trim()) +
+                (data.stdout ? "\n\n" + data.stdout.trim() : "");
+            showToast("Falha na compilação", "alert-triangle");
+        }
+    } catch (err) {
+        resultBox.textContent =
+            "⚠️ Não foi possível falar com o servidor local.\n" +
+            "Verifique se ele está rodando:\n\n" +
+            "  python tools/map_editor/server.py\n" +
+            "  http://localhost:8000\n\n" +
+            "Detalhe: " + err.message;
+        showToast("Servidor local não encontrado", "alert-triangle");
+    } finally {
+        btn.disabled = false;
+    }
+}
+
 function downloadFile(format) {
     const levelIdSanitized = levelId.padStart(2, '0');
     let filename = `level_${levelIdSanitized}_map.txt`;
@@ -985,50 +1380,21 @@ function showToast(message, iconName = "info") {
     }, 3000);
 }
 
-// --- Responsive/Collapsible Panels Logic ---
+// --- Drawer (code / compile panel) ---
 
-function toggleSidebar() {
-    const body = document.querySelector(".app-body");
-    const btn = document.getElementById("btn-toggle-sidebar");
-    
-    body.classList.toggle("sidebar-collapsed");
-    updateAppBodyClasses();
-    
-    if (body.classList.contains("sidebar-collapsed")) {
-        btn.classList.remove("active");
-        btn.innerHTML = `<i data-lucide="chevron-right"></i> Configurações`;
-    } else {
-        btn.classList.add("active");
-        btn.innerHTML = `<i data-lucide="chevron-left"></i> Configurações`;
-    }
-    lucide.createIcons();
+function setDrawer(open) {
+    const app = document.querySelector(".app");
+    const btn = document.getElementById("btn-toggle-output");
+    app.classList.toggle("drawer-open", open);
+    if (btn) btn.classList.toggle("active", open);
 }
 
 function toggleOutput() {
-    const body = document.querySelector(".app-body");
-    const btn = document.getElementById("btn-toggle-output");
-    
-    body.classList.toggle("output-collapsed");
-    updateAppBodyClasses();
-    
-    if (body.classList.contains("output-collapsed")) {
-        btn.classList.remove("active");
-        btn.innerHTML = `Código <i data-lucide="chevron-left"></i>`;
-    } else {
-        btn.classList.add("active");
-        btn.innerHTML = `Código <i data-lucide="chevron-right"></i>`;
-    }
-    lucide.createIcons();
+    const isOpen = document.querySelector(".app").classList.contains("drawer-open");
+    setDrawer(!isOpen);
 }
 
-function updateAppBodyClasses() {
-    const body = document.querySelector(".app-body");
-    const hasSidebarCollapsed = body.classList.contains("sidebar-collapsed");
-    const hasOutputCollapsed = body.classList.contains("output-collapsed");
-    
-    body.classList.remove("both-collapsed");
-    
-    if (hasSidebarCollapsed && hasOutputCollapsed) {
-        body.classList.add("both-collapsed");
-    }
+function openDrawerTab(tabId) {
+    setDrawer(true);
+    switchTab(tabId);
 }

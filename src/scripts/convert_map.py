@@ -139,9 +139,12 @@ def parse_ascii_grid(lines: list[str]) -> dict:
     # Pad all lines to same width
     padded_grid = [line.ljust(W) for line in grid_lines]
     
-    # Read ystep setting (default to 1.6)
+    # Read ystep setting. Default is the canonical 3.0 used by the visual editor,
+    # so a headerless map compiles at the same vertical scale the editor draws at.
+    # Existing maps may pin a different value via the `ystep:` header (e.g. level_01).
+    DEFAULT_YSTEP = 3.0
     ystep_val = settings.get("ystep") or settings.get("y_step")
-    Y_STEP = float(ystep_val) if ystep_val is not None else 3
+    Y_STEP = float(ystep_val) if ystep_val is not None else DEFAULT_YSTEP
     
     # We will build structures by scanning the grid cells
     # Column width: 2.0 (X)

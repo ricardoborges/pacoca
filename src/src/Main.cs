@@ -15,6 +15,8 @@ public partial class Main : Node3D
 
     public override void _Ready()
     {
+        ApplyCmdlineLevelOverride();
+
         _levelWrapper = GetNode<Node3D>("LevelWrapper");
         _player = GetNode<Player>("Player");
         _camera = GetNode<CameraController>("Camera3D");
@@ -38,6 +40,26 @@ public partial class Main : Node3D
         fade.TweenProperty(_musicPlayer, "volume_db", 0.0f, 1.0f);
 
         LoadLevel();
+    }
+
+    // Lets the map editor's "Testar fase" button launch straight into a level:
+    //   Godot --path src scenes/main.tscn -- --level=04
+    //   Godot --path src scenes/main.tscn -- --level=res://scenes/levels/level_04.tscn
+    private void ApplyCmdlineLevelOverride()
+    {
+        foreach (string arg in OS.GetCmdlineUserArgs())
+        {
+            if (!arg.StartsWith("--level=")) continue;
+
+            string val = arg.Substring("--level=".Length).Trim();
+            if (string.IsNullOrEmpty(val)) continue;
+
+            string path = val.StartsWith("res://")
+                ? val
+                : $"res://scenes/levels/level_{val}.tscn";
+            GameSettings.LevelToLoad = path;
+            GD.Print($"Main.cs: Level override from cmdline -> {path}");
+        }
     }
 
     private void LoadLevel()

@@ -47,11 +47,16 @@ dotnet build
 ```
 Paçoca/
 ├── assets/                 # Assets brutos (modelos exportados, etc.)
+├── docs/                   # Documentação (ex.: map_syntax.md)
+├── tools/
+│   └── map_editor/         # Editor visual de mapas (web + server.py)
 └── src/                    # Raiz do projeto Godot (res://)
     ├── project.godot
     ├── Paçoca.csproj
     ├── scenes/             # Cenas: menu, main, hud, player, inimigos, fases...
     │   └── levels/         # level_01.tscn, debug.tscn
+    ├── scripts/            # Pipeline de fases (convert_map.py, generate_level.py)
+    │   └── levels/         # Mapas-fonte (.txt/.json) e módulos gerados
     ├── models/             # Modelos FBX animados (Mixamo)
     ├── materials/
     ├── textures/
@@ -63,6 +68,49 @@ Paçoca/
         ├── HUD.cs, Menu.cs, PauseMenu.cs, GameOver.cs
         └── Ring.cs, Spring.cs, DashPad.cs, Enemy.cs
 ```
+
+## Criação de fases (editor de mapas)
+
+As fases são desenhadas como **mapas** (grid ASCII ou JSON) e convertidas em cenas Godot (`level_XX.tscn`) por um pipeline em Python. Há um **editor visual web** que cobre todo o ciclo: desenhar → compilar → testar.
+
+### Editor visual (`tools/map_editor/`)
+
+```bash
+python tools/map_editor/server.py     # abra http://localhost:8000
+```
+
+- **Dock de paleta** (plataformas, rampas, anéis, molas, inimigos, espinhos, spawn, fim de fase) + ferramentas pintar/borracha.
+- **Compilar** — gera o `.tscn` da fase a partir do desenho.
+- **Testar fase** (`F5`) — compila a fase atual e abre o Godot **direto nela**.
+- **Executar** — abre o jogo pelo menu.
+- **Engrenagem** — configura o caminho do executável do Godot (detectado no PATH automaticamente; informe manualmente se não estiver).
+- Atalhos: `B` pintar · `E` borracha · `F5` testar · `Esc` fechar.
+
+> O editor também funciona aberto direto (`file://`) para desenhar e exportar, mas os botões que executam o Godot/compilam exigem o servidor local.
+
+### Compilar pela linha de comando
+
+A partir de `src/` (raiz do projeto Godot):
+
+```powershell
+python scripts/convert_map.py --input scripts/levels/level_04_map.txt --level 04
+```
+
+Isso gera/atualiza `src/scenes/levels/level_04.tscn`, pronto para abrir no Godot.
+
+### Sintaxe rápida
+
+Cada **coluna** do grid vale 2 m (X) e cada **linha** 3 m (Y, `ystep`); a última linha não-vazia é o chão (`Y = 0`).
+
+| Char | Elemento | Char | Elemento |
+|:----:|----------|:----:|----------|
+| `#` | plataforma | `V` `F` | mola vertical / diagonal |
+| `/` `\` | rampa sobe / desce | `D` | acelerador (dash) |
+| `o` | anel | `E` `C` | inimigo / cacto |
+| `P` | spawn do jogador | `S` | espinhos |
+| `G` | moeda de fim de fase | ` ` | vazio |
+
+📖 **Documentação completa** (regras do grid, alturas, headroom do jogador, formato JSON, flag `--level`): [`docs/map_syntax.md`](docs/map_syntax.md).
 
 ## Arquitetura
 

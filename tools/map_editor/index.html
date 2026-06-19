@@ -13,109 +13,83 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- HEADER -->
-        <header class="app-header">
-            <div class="logo-area">
+    <div class="app">
+        <!-- TOP BAR -->
+        <header class="topbar">
+            <div class="brand">
                 <span class="logo-badge">2.5D</span>
                 <h1>Paçoca <span class="accent">Map Editor</span></h1>
             </div>
-            <p class="subtitle">Criador visual de níveis e exportador ASCII / JSON para Godot Engine</p>
-            <div class="header-status" id="header-status">
-                <i data-lucide="info"></i>
-                <span>Modo de edição ativo</span>
+
+            <div class="topbar-field">
+                <label for="level-id">Nível</label>
+                <input type="text" id="level-id" value="04" maxlength="3" class="inp inp-id" title="ID do nível">
+                <input type="text" id="level-name" value="Ruínas Celestes" class="inp inp-name" title="Nome do nível" placeholder="Nome do nível">
+            </div>
+
+            <div class="topbar-field">
+                <label>Grid</label>
+                <input type="number" id="grid-width" value="100" min="10" max="1000" class="inp inp-num" title="Largura (colunas)">
+                <span class="x">×</span>
+                <input type="number" id="grid-height" value="15" min="5" max="100" class="inp inp-num" title="Altura (linhas)">
+                <button class="btn btn-secondary btn-sm" onclick="rebuildGrid()" title="Aplicar dimensões">Aplicar</button>
+            </div>
+
+            <div class="topbar-spacer"></div>
+
+            <div class="topbar-field view-controls">
+                <button class="icon-btn" onclick="adjustZoom(-0.1)" title="Zoom -"><i data-lucide="zoom-out"></i></button>
+                <span class="zoom-level" id="zoom-label">100%</span>
+                <button class="icon-btn" onclick="adjustZoom(0.1)" title="Zoom +"><i data-lucide="zoom-in"></i></button>
+                <button class="icon-btn" onclick="adjustZoom(0, true)" title="Resetar zoom"><i data-lucide="maximize-2"></i></button>
+                <button class="icon-btn active" id="btn-toggle-grid" onclick="toggleGridlines()" title="Alternar linhas do grid"><i data-lucide="grid-3x3"></i></button>
+            </div>
+
+            <div class="topbar-actions">
+                <button class="icon-btn" onclick="openSettings()" title="Configurar caminho do Godot">
+                    <i data-lucide="settings"></i>
+                </button>
+                <button class="btn btn-secondary" onclick="openMaps()" title="Salvar, abrir e gerenciar mapas">
+                    <i data-lucide="folder"></i> Mapas
+                </button>
+                <button class="btn btn-secondary" id="btn-toggle-output" onclick="toggleOutput()" title="Exportar código (ASCII / JSON)">
+                    <i data-lucide="code-2"></i> Código
+                </button>
+                <button class="btn btn-secondary" onclick="openDrawerTab('tab-instructions')" title="Compilar para o Godot">
+                    <i data-lucide="hammer"></i> Compilar
+                </button>
+                <button class="btn btn-primary" id="btn-test-level" onclick="testLevel()" title="Compilar a fase atual e abrir direto nela no Godot (F5)">
+                    <i data-lucide="flask-conical"></i> Testar fase
+                </button>
+                <button class="btn btn-run" onclick="runGame()" title="Executar o jogo a partir do menu">
+                    <i data-lucide="gamepad-2"></i> Executar
+                </button>
             </div>
         </header>
 
-        <main class="app-body">
-            <!-- SIDEBAR: PALETTE & METADATA -->
-            <section class="sidebar panel">
-                <div class="panel-section">
-                    <h3><i data-lucide="settings"></i> Configurações do Nível</h3>
-                    <div class="input-group">
-                        <label for="level-id">ID do Nível</label>
-                        <input type="text" id="level-id" value="04" placeholder="Ex: 04" maxlength="3">
-                    </div>
-                    <div class="input-group">
-                        <label for="level-name">Nome do Nível</label>
-                        <input type="text" id="level-name" value="Ruínas Celestes" placeholder="Ex: Templo do Caos">
-                    </div>
-                </div>
-
-                <div class="panel-section">
-                    <h3><i data-lucide="grid"></i> Dimensões do Grid</h3>
-                    <div class="size-controls">
-                        <div class="input-group">
-                            <label for="grid-width">Largura (X)</label>
-                            <div class="number-input">
-                                <button type="button" class="btn-step" onclick="changeGridSize('width', -10)">-10</button>
-                                <input type="number" id="grid-width" value="100" min="10" max="1000">
-                                <button type="button" class="btn-step" onclick="changeGridSize('width', 10)">+10</button>
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="grid-height">Altura (Y)</label>
-                            <div class="number-input">
-                                <button type="button" class="btn-step" onclick="changeGridSize('height', -1)">-1</button>
-                                <input type="number" id="grid-height" value="15" min="5" max="100">
-                                <button type="button" class="btn-step" onclick="changeGridSize('height', 1)">+1</button>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="rebuildGrid()">Aplicar Novas Dimensões</button>
-                </div>
-
-                <div class="panel-section">
-                    <h3><i data-lucide="brush"></i> Ferramentas</h3>
-                    <div class="tool-selector">
-                        <button class="tool-btn active" id="tool-paint" onclick="setToolMode('paint')">
-                            <i data-lucide="pencil"></i> Pintar
-                        </button>
-                        <button class="tool-btn" id="tool-erase" onclick="setToolMode('erase')">
-                            <i data-lucide="eraser"></i> Borracha
-                        </button>
-                        <button class="tool-btn" id="tool-clear" onclick="clearGrid()">
-                            <i data-lucide="trash-2"></i> Limpar Tudo
-                        </button>
-                    </div>
-                </div>
-
-                <div class="panel-section">
-                    <h3><i data-lucide="layers"></i> Paleta de Blocos</h3>
-                    <div class="palette-list" id="palette-list">
-                        <!-- Instantiated by Javascript -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- CENTER WORKSPACE: CANVAS GRID -->
-            <section class="workspace">
-                <div class="toolbar">
-                    <button class="btn btn-secondary btn-toggle" id="btn-toggle-sidebar" onclick="toggleSidebar()" title="Recolher Configurações">
-                        <i data-lucide="chevron-left"></i> Configurações
+        <!-- STAGE: dock + canvas + drawer -->
+        <main class="stage">
+            <!-- LEFT DOCK: tools + palette -->
+            <aside class="dock">
+                <div class="dock-tools">
+                    <button class="tool-btn active" id="tool-paint" onclick="setToolMode('paint')" title="Pintar (B)">
+                        <i data-lucide="pencil"></i>
                     </button>
-                    
-                    <div class="view-controls">
-                        <button class="btn btn-secondary" onclick="adjustZoom(-0.1)" title="Zoom Out"><i data-lucide="zoom-out"></i></button>
-                        <span class="zoom-level" id="zoom-label">100%</span>
-                        <button class="btn btn-secondary" onclick="adjustZoom(0.1)" title="Zoom In"><i data-lucide="zoom-in"></i></button>
-                        <button class="btn btn-secondary" onclick="adjustZoom(0, true)" title="Resetar Zoom"><i data-lucide="maximize-2"></i></button>
-                        <span class="divider"></span>
-                        <button class="btn btn-secondary btn-toggle" id="btn-toggle-grid" onclick="toggleGridlines()" title="Alternar Linhas do Grid">
-                            <i data-lucide="grid-3x3"></i> Linhas do Grid
-                        </button>
-                    </div>
-                    
-                    <div class="toolbar-right">
-                        <div class="coordinate-info">
-                            <span id="coord-display">Coord: X: 0, Y: 0 | Posição Real: X: 0.0m, Y: 0.0m</span>
-                        </div>
-                        <button class="btn btn-secondary btn-toggle" id="btn-toggle-output" onclick="toggleOutput()" title="Recolher Código/Exportações">
-                            Código <i data-lucide="chevron-right"></i>
-                        </button>
-                    </div>
+                    <button class="tool-btn" id="tool-erase" onclick="setToolMode('erase')" title="Borracha (E)">
+                        <i data-lucide="eraser"></i>
+                    </button>
+                    <button class="tool-btn tool-danger" onclick="clearGrid()" title="Limpar tudo">
+                        <i data-lucide="trash-2"></i>
+                    </button>
                 </div>
+                <div class="dock-sep"></div>
+                <div class="palette-list" id="palette-list">
+                    <!-- Instantiated by JavaScript -->
+                </div>
+            </aside>
 
+            <!-- CENTER: canvas -->
+            <section class="workspace">
                 <div class="grid-container" id="grid-container">
                     <div class="grid-scroll-area">
                         <div class="map-grid" id="map-grid">
@@ -124,16 +98,23 @@
                     </div>
                 </div>
 
-                <div class="quick-nav">
-                    <label>Navegação Horizontal Rápida</label>
-                    <input type="range" id="scroll-slider" min="0" max="100" value="0">
+                <div class="statusbar">
+                    <span class="coord-info" id="coord-display">X: 0, Y: 0 | Real: 0.0m, 0.0m</span>
+                    <div class="quick-nav">
+                        <i data-lucide="move-horizontal"></i>
+                        <input type="range" id="scroll-slider" min="0" max="100" value="0" title="Navegação horizontal">
+                    </div>
                 </div>
             </section>
 
-            <!-- RIGHT PANEL: EXPORTS / IMPORTS -->
-            <section class="output-drawer panel">
+            <!-- RIGHT DRAWER (overlay): exports / imports / compile -->
+            <aside class="drawer" id="drawer">
+                <div class="drawer-head">
+                    <span class="drawer-title">Código & Compilação</span>
+                    <button class="icon-btn" onclick="toggleOutput()" title="Fechar (Esc)"><i data-lucide="x"></i></button>
+                </div>
                 <div class="tabs-header">
-                    <button class="tab-btn active" onclick="switchTab('tab-ascii')">Grid ASCII</button>
+                    <button class="tab-btn active" onclick="switchTab('tab-ascii')">ASCII</button>
                     <button class="tab-btn" onclick="switchTab('tab-json')">JSON</button>
                     <button class="tab-btn" onclick="switchTab('tab-import')">Importar</button>
                     <button class="tab-btn" onclick="switchTab('tab-instructions')">Compilar</button>
@@ -144,7 +125,7 @@
                     <div class="tab-panel active" id="tab-ascii">
                         <div class="tab-actions">
                             <button class="btn btn-sm btn-secondary" onclick="copyToClipboard('ascii-output')">
-                                <i data-lucide="copy"></i> Copiar ASCII
+                                <i data-lucide="copy"></i> Copiar
                             </button>
                             <button class="btn btn-sm btn-primary" onclick="downloadFile('txt')">
                                 <i data-lucide="download"></i> Baixar .txt
@@ -157,7 +138,7 @@
                     <div class="tab-panel" id="tab-json">
                         <div class="tab-actions">
                             <button class="btn btn-sm btn-secondary" onclick="copyToClipboard('json-output')">
-                                <i data-lucide="copy"></i> Copiar JSON
+                                <i data-lucide="copy"></i> Copiar
                             </button>
                             <button class="btn btn-sm btn-primary" onclick="downloadFile('json')">
                                 <i data-lucide="download"></i> Baixar .json
@@ -168,35 +149,50 @@
 
                     <!-- Import Tab -->
                     <div class="tab-panel" id="tab-import">
-                        <p class="tab-note">Cole o código do mapa em formato Grid ASCII (incluindo cabeçalhos) ou JSON estruturado para importá-lo no editor.</p>
-                        <textarea id="import-input" class="code-view input-view" placeholder="Cole aqui seu arquivo level_XX_map.txt ou .json..." spellcheck="false"></textarea>
+                        <p class="tab-note">Cole um mapa em Grid ASCII (com cabeçalhos) ou JSON para carregá-lo no editor.</p>
+                        <textarea id="import-input" class="code-view input-view" placeholder="Cole aqui seu level_XX_map.txt ou .json..." spellcheck="false"></textarea>
                         <div class="tab-actions justify-end">
                             <button class="btn btn-primary" onclick="importMap()">
-                                <i data-lucide="upload"></i> Carregar Mapa no Editor
+                                <i data-lucide="upload"></i> Carregar no Editor
                             </button>
                         </div>
                     </div>
 
-                    <!-- Instructions Tab -->
+                    <!-- Compile Tab -->
                     <div class="tab-panel" id="tab-instructions">
                         <div class="instructions-guide">
-                            <h4>Como compilar este nível para o Godot:</h4>
-                            <ol>
-                                <li>Salve/Baixe o arquivo de texto como <code class="highlight">level_<span class="dynamic-level-id">04</span>_map.txt</code>.</li>
-                                <li>Coloque o arquivo na pasta do projeto em: <br><code>src/scripts/levels/</code>.</li>
-                                <li>Abra seu terminal na raiz do projeto e execute a compilação:</li>
-                            </ol>
-                            
-                            <div class="command-box">
-                                <code id="compile-command">python scripts/convert_map.py --input scripts/levels/level_04_map.txt --level 04</code>
-                                <button class="btn-copy-icon" onclick="copyCommand()" title="Copiar Comando"><i data-lucide="copy"></i></button>
+                            <h4>Compilar este nível para o Godot</h4>
+
+                            <div class="live-compile-card">
+                                <p>Com o servidor local rodando, compile direto daqui: grava o mapa no projeto e gera o <code>.tscn</code> pronto para abrir no Godot.</p>
+                                <button class="btn btn-primary" id="btn-compile-live" onclick="compileLevel()">
+                                    <i data-lucide="play"></i> Compilar agora
+                                </button>
+                                <pre id="compile-result" class="compile-result" hidden></pre>
+                                <p class="tab-note">
+                                    Requer o servidor local: <code>python tools/map_editor/server.py</code> e abrir
+                                    <code>http://localhost:8000</code> (não funciona via <code>file://</code>).
+                                </p>
                             </div>
+
+                            <details class="manual-steps">
+                                <summary>Compilar manualmente (sem servidor)</summary>
+                                <ol>
+                                    <li>Baixe o arquivo como <code class="highlight">level_<span class="dynamic-level-id">04</span>_map.txt</code>.</li>
+                                    <li>Coloque-o em <code>tools/map_editor/levels/</code>.</li>
+                                    <li>No terminal, a partir da pasta <code>src/</code>, execute:</li>
+                                </ol>
+                                <div class="command-box">
+                                    <code id="compile-command">python scripts/convert_map.py --input scripts/levels/level_04_map.txt --level 04</code>
+                                    <button class="btn-copy-icon" onclick="copyCommand()" title="Copiar Comando"><i data-lucide="copy"></i></button>
+                                </div>
+                            </details>
 
                             <div class="metrics-card">
                                 <h5>Métricas Importantes (Platformer Kit)</h5>
                                 <ul>
                                     <li><strong>Grade X (Largura)</strong>: Cada bloco <code>#</code> ou rampa <code>/</code> mede <strong>2m</strong>.</li>
-                                    <li><strong>Grade Y (Altura)</strong>: Cada linha mede <strong>1m</strong>.</li>
+                                    <li><strong>Grade Y (Altura)</strong>: Cada linha mede <strong>3m</strong> (gravado como <code>ystep: 3.0</code> no arquivo).</li>
                                     <li><strong>Salto Médio</strong>: 4m horizontalmente (parado), até 15m (com velocidade máxima).</li>
                                     <li><strong>Molas</strong>: Verticais lançam a 22m de altura. Diagonais para cruzamento rápido.</li>
                                     <li><strong>Queda Fatal</strong>: Evite plataformas em Y &lt; -15m.</li>
@@ -205,8 +201,59 @@
                         </div>
                     </div>
                 </div>
-            </section>
+            </aside>
+            <div class="drawer-scrim" id="drawer-scrim" onclick="toggleOutput()"></div>
         </main>
+
+        <!-- SETTINGS MODAL (Godot path) -->
+        <div class="modal-overlay" id="settings-modal" hidden onclick="onSettingsBackdrop(event)">
+            <div class="modal">
+                <div class="modal-head">
+                    <span><i data-lucide="settings"></i> Configuração do Godot</span>
+                    <button class="icon-btn" onclick="closeSettings()" title="Fechar (Esc)"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <label for="godot-path">Caminho do executável do Godot</label>
+                    <input type="text" id="godot-path" class="inp" spellcheck="false"
+                           placeholder="C:\\caminho\\para\\Godot_mono.exe">
+                    <p class="settings-status" id="godot-status">Carregando…</p>
+                    <p class="tab-note">
+                        Usado pelos botões <strong>Testar fase</strong> e <strong>Executar</strong>.
+                        Se o Godot estiver no PATH, é detectado e preenchido automaticamente —
+                        informe o caminho manualmente apenas se não estiver.
+                    </p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="detectGodot()" title="Procurar o Godot no PATH do sistema">
+                        <i data-lucide="search"></i> Detectar no PATH
+                    </button>
+                    <button class="btn btn-primary" onclick="saveGodotPath()">
+                        <i data-lucide="check"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAPS MODAL (save / open / manage) -->
+        <div class="modal-overlay" id="maps-modal" hidden onclick="onMapsBackdrop(event)">
+            <div class="modal modal-lg">
+                <div class="modal-head">
+                    <span><i data-lucide="folder"></i> Meus mapas</span>
+                    <button class="icon-btn" onclick="closeMaps()" title="Fechar (Esc)"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="maps-savebar">
+                        <button class="btn btn-primary" onclick="saveCurrentMap()">
+                            <i data-lucide="save"></i> Salvar mapa atual
+                        </button>
+                        <span class="tab-note" id="maps-savehint"></span>
+                    </div>
+                    <div class="maps-list" id="maps-list">
+                        <p class="tab-note">Carregando…</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- TOAST SYSTEM -->
         <div class="toast-container" id="toast-container"></div>
